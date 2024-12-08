@@ -15,7 +15,7 @@ on:
 
 env:
   MY_IMAGE_NAME: "${{ github.event.repository.name }}"  # the name of the image produced by this build, matches repo names
-  MY_IMAGE_DESC: "My Customized Universal Blue Image"
+  MY_IMAGE_DESC: "HyprBlue Custom Image, based on Bluefin-dx"
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"  # do not edit
 
 concurrency:
@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   build_push:
-    name: Build and push image
+    name: Build And Push Image
     runs-on: ubuntu-24.04
 
     permissions:
@@ -34,13 +34,13 @@ jobs:
 
     steps:
       # Checkout push-to-registry action GitHub repository
-      - name: Checkout Push to Registry action
+      - name: Checkout Push To Registry Action
         uses: actions/checkout@v4
 
-      - name: Maximize build space
+      - name: Maximize Build Space
         uses: ublue-os/remove-unwanted-software@v7
 
-      - name: Generate tags
+      - name: Generate Tags
         id: generate-tags
         shell: bash
         run: |
@@ -147,7 +147,7 @@ jobs:
       - uses: sigstore/cosign-installer@v3.7.0
         if: github.event_name != 'pull_request'
 
-      - name: Sign container image
+      - name: Sign Container Image
         if: github.event_name != 'pull_request'
         run: |
           cosign sign -y --key env://COSIGN_PRIVATE_KEY ${{ steps.registry_case.outputs.lowercase }}/${{ steps.build_image.outputs.image }}@${TAGS}

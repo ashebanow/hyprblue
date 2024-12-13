@@ -15,9 +15,9 @@
 # - "base"
 #
 #  "aurora", "bazzite", "bluefin" or "ucore" may also be used but have different suffixes.
-ARG SOURCE_IMAGE="bluefin-dx"
+ARG SOURCE_IMAGE="bluefin"
 
-## SOURCE_SUFFIX arg should include a hyphen and the appropriate suffix name
+## SOURCE_SUFFIX arg should include a hyphen and the appropriate suffix name.
 # These examples all work for silverblue/kinoite/sericea/onyx/lazurite/vauxite/base
 # - "-main"
 # - "-nvidia"
@@ -27,14 +27,13 @@ ARG SOURCE_IMAGE="bluefin-dx"
 # - "-surface-nvidia"
 #
 # aurora, bazzite and bluefin each have unique suffixes. Please check the specific image.
-# ucore has the following possible suffixes
-# - stable
-# - stable-nvidia
-# - stable-zfs
-# - stable-nvidia-zfs
-# - (and the above with testing rather than stable)
-ARG SOURCE_SUFFIX=""
-# ARG SOURCE_SUFFIX="-nvidia"
+# ucore has the following possible suffixes:
+#
+# -nvidia
+# -zfs
+# -nvidia-zfs
+ARG SOURCE_SUFFIX="-dx-nvidia"
+# ARG SOURCE_SUFFIX="-dx"
 
 ## SOURCE_TAG arg must be a version built for the specific image: eg, 39, 40, gts, latest
 ARG SOURCE_TAG="latest"

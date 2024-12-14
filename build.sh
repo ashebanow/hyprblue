@@ -15,7 +15,10 @@ USE_SDDM=FALSE
 
 #######################################################################
 # Setup Repositories
+#
 # NOTE: RPMFusion repos are available by default
+# NOTE: chrome .repo file is installed in the Containerfile prior
+# to running this script.
 
 curl https://copr.fedorainfracloud.org/coprs/solopasha/hyprland/repo/fedora-${RELEASE}/solopasha-hyprland-fedora-${RELEASE}.repo \
  -o /etc/yum.repos.d/solopasha-hyprland.repo
@@ -37,16 +40,10 @@ if [[ $USE_NWG_SHELL == TRUE ]]; then
   -o /etc/yum.repos.d/mochaa-gtk-session-lock.repo
 fi
 
-# add chrome repo. Chrome on fedora works by downloading and
-# manually installing the rpm. That in turn installs the repo
-# in /etc/yum.repos.d, which is needed to let chrome update.
-#
-# We keep a copy of that repo definition here, it isn't release
-# specific AFAICT.
-#
-# Same story for 1password and other repos that get added to
-# the repos folder in this source tree.
-# cp *.repo /etc/yum.repos.d/
+# make sure that 1password's gpg key has been imported
+rpm --import https://downloads.1password.com/linux/keys/1password.asc
+echo -e "[1password]\nname=1Password Stable Channel\nbaseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=1\ngpgkey=\"https://downloads.1password.com/linux/keys/1password.asc\"" > /etc/yum.repos.d/1password.repo
+
 
 # TODO: Refresh the metadata after adding new repos, but rpm-ostree
 # doesn't work in this context

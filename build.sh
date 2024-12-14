@@ -39,13 +39,14 @@ fi
 
 # add chrome repo. Chrome on fedora works by downloading and
 # manually installing the rpm. That in turn installs the repo
-# in /etc/yum.repos.d.
+# in /etc/yum.repos.d, which is needed to let chrome update.
 #
 # We keep a copy of that repo definition here, it isn't release
 # specific AFAICT.
 #
-# Same story for 1password and other repos that get added here.
-cp repos/*.repo /etc/yum.repos.d/
+# Same story for 1password and other repos that get added to
+# the repos folder in this source tree.
+cp *.repo /etc/yum.repos.d/
 
 # Very important to refresh the metadata after adding new repos
 rpm-ostree refresh-md --force

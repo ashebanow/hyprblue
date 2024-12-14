@@ -129,23 +129,25 @@ HYPR_PKGS=(
 )
 
 # See https://github.com/nwg-piotr/nwg-shell/blob/main/install/fedora-ostree.sh
-NWG_SHELL_PKGS=(
+NWG_SHELL_PKGS=()
 if [[ $USE_NWG_SHELL == TRUE ]]; then
-  nwg-shell
-  gtklock
+  NWG_SHELL_PKGS=(
+    nwg-shell
+    gtklock
+  )
 fi
-)
 
 # SDDM not set up properly yet, so this is just a placeholder.
 # For now you'll have to invoke Hyprland from the command line.
-SDDM_PACKAGES=(
+SDDM_PACKAGES=()
 if [[ $USE_SDDM == TRUE ]]; then
-  sddm
-  sddm-breeze
-  sddm-kcm
-  qt6-qt5compat
+  SDDM_PACKAGES=(
+    sddm
+    sddm-breeze
+    sddm-kcm
+    qt6-qt5compat
+  )
 fi
-)
 
 # 1password* and chrome are here because the browser<->extension
 # link in 1password doesn't work if either app is a flatpak.

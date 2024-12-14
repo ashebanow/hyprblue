@@ -48,8 +48,9 @@ fi
 # the repos folder in this source tree.
 # cp *.repo /etc/yum.repos.d/
 
-# Very important to refresh the metadata after adding new repos
-rpm-ostree refresh-md --force
+# TODO: Refresh the metadata after adding new repos, but rpm-ostree
+# doesn't work in this context
+# rpm-ostree refresh-md --force
 
 #######################################################################
 ### Install Packages

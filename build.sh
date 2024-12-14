@@ -15,7 +15,8 @@ USE_SDDM=FALSE
 
 #######################################################################
 # Setup Repositories
-#
+#######################################################################
+
 # NOTE: RPMFusion repos are available by default
 # NOTE: chrome .repo file is installed in the Containerfile prior
 # to running this script.
@@ -41,16 +42,15 @@ if [[ $USE_NWG_SHELL == TRUE ]]; then
 fi
 
 # make sure that 1password's gpg key has been imported
-rpm --import https://downloads.1password.com/linux/keys/1password.asc
-echo -e "[1password]\nname=1Password Stable Channel\nbaseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=1\ngpgkey=\"https://downloads.1password.com/linux/keys/1password.asc\"" > /etc/yum.repos.d/1password.repo
+# rpm --import https://downloads.1password.com/linux/keys/1password.asc
+# echo -e "[1password]\nname=1Password Stable Channel\nbaseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=1\ngpgkey=\"https://downloads.1password.com/linux/keys/1password.asc\"" > /etc/yum.repos.d/1password.repo
+# rpm refresh-md --force
+# curl https://downloads.1password.com/linux/rpm/stable/x86_64/1password-latest.rpm
 
-
-# TODO: Refresh the metadata after adding new repos, but rpm-ostree
-# doesn't work in this context
-# rpm-ostree refresh-md --force
 
 #######################################################################
-### Install Packages
+## Install Packages
+#######################################################################
 
 # Note that these fedora font packages are preinstalled in the
 # bluefin-dx image, along with the SymbolsNerdFont which doesn't

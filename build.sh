@@ -87,7 +87,7 @@ HYPR_DEPS=(
   inxi
   kvantum
   mpv
-  mpv-mpris
+#   mpv-mpris
   nwg-look
   pamixer
   pavucontrol
@@ -149,9 +149,9 @@ fi
 # 1password* and chrome are here because the browser<->extension
 # link in 1password doesn't work if either app is a flatpak.
 LAYERED_APPS=(
-  1password
-  1password-cli
-  google-chrome-stable
+#   1password
+#   1password-cli
+#   google-chrome-stable
   kitty
   kitty-terminfo
   thunar

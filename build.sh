@@ -45,7 +45,7 @@ fi
 # specific AFAICT.
 #
 # Same story for 1password and other repos that get added here.
-cp ./repos/*.repo /etc/yum.repos.d/
+cp repos/*.repo /etc/yum.repos.d/
 
 # Very important to refresh the metadata after adding new repos
 rpm-ostree refresh-md --force
@@ -181,6 +181,11 @@ xdg-mime default thunar.desktop application/x-wayland-gnome-saved-search
 # systemctl enable bluetooth.service
 
 if [[ $USE_SDDM == TRUE ]]; then
+    for login_manager in lightdm gdm lxdm lxdm-gtk3; do
+    if sudo dnf list installed "$login_manager" &>> /dev/null; then
+      sudo systemctl disable "$login_manager" 2>&1 | tee -a "$LOG"
+    fi
+    done
   systemctl set-default graphical.target
   systemctl enable sddm.service
 fi

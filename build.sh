@@ -46,7 +46,7 @@ fi
 #
 # Same story for 1password and other repos that get added to
 # the repos folder in this source tree.
-cp *.repo /etc/yum.repos.d/
+# cp *.repo /etc/yum.repos.d/
 
 # Very important to refresh the metadata after adding new repos
 rpm-ostree refresh-md --force

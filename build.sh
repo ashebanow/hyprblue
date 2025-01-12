@@ -41,11 +41,10 @@ if [[ $USE_NWG_SHELL == TRUE ]]; then
   -o /etc/yum.repos.d/mochaa-gtk-session-lock.repo
 fi
 
-# make sure that 1password's gpg key has been imported
+# Install 1password repo.
 rpm --import https://downloads.1password.com/linux/keys/1password.asc
 echo -e "[1password]\nname=1Password Stable Channel\nbaseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=1\ngpgkey=\"https://downloads.1password.com/linux/keys/1password.asc\"" > /etc/yum.repos.d/1password.repo
-rpm refresh-md --force
-curl https://downloads.1password.com/linux/rpm/stable/x86_64/1password-latest.rpm
+rpm-ostree refresh-md --force
 
 
 #######################################################################

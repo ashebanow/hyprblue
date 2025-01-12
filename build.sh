@@ -42,10 +42,10 @@ if [[ $USE_NWG_SHELL == TRUE ]]; then
 fi
 
 # make sure that 1password's gpg key has been imported
-# rpm --import https://downloads.1password.com/linux/keys/1password.asc
-# echo -e "[1password]\nname=1Password Stable Channel\nbaseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=1\ngpgkey=\"https://downloads.1password.com/linux/keys/1password.asc\"" > /etc/yum.repos.d/1password.repo
-# rpm refresh-md --force
-# curl https://downloads.1password.com/linux/rpm/stable/x86_64/1password-latest.rpm
+rpm --import https://downloads.1password.com/linux/keys/1password.asc
+echo -e "[1password]\nname=1Password Stable Channel\nbaseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=1\ngpgkey=\"https://downloads.1password.com/linux/keys/1password.asc\"" > /etc/yum.repos.d/1password.repo
+rpm refresh-md --force
+curl https://downloads.1password.com/linux/rpm/stable/x86_64/1password-latest.rpm
 
 
 #######################################################################
@@ -149,8 +149,8 @@ fi
 # 1password* and chrome are here because the browser<->extension
 # link in 1password doesn't work if either app is a flatpak.
 LAYERED_APPS=(
-#   1password
-#   1password-cli
+  1password
+  1password-cli
 #   google-chrome-stable
   kitty
   kitty-terminfo

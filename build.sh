@@ -54,6 +54,10 @@ chmod +x 1password.sh
 bash ./1password.sh
 rm 1password.sh
 
+### now install chrome via our own script
+install-chrome.sh
+rm install-chrome.sh
+
 # Note that these fedora font packages are preinstalled in the
 # bluefin-dx image, along with the SymbolsNerdFont which doesn't
 # have an associated fedora package:

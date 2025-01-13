@@ -43,10 +43,7 @@ ARG SOURCE_TAG="latest"
 
 FROM ghcr.io/ublue-os/${SOURCE_IMAGE}${SOURCE_SUFFIX}:${SOURCE_TAG}
 
-COPY build.sh /tmp/
-
-# install our .repo files directly into the container's yum.repos.d directory
-COPY repos/ /etc/yum.repos.d/
+COPY build.sh install-chrome.sh /tmp/
 
 RUN mkdir -p /var/lib/alternatives && \
     /tmp/build.sh && \

@@ -43,9 +43,6 @@ if [[ $USE_NWG_SHELL == TRUE ]]; then
   -o /etc/yum.repos.d/mochaa-gtk-session-lock.repo
 fi
 
-# Remove firefox, and use the flatpak instead
-rpm-ostree override remove firefox firefox-langpacks
-
 #######################################################################
 ## Install Packages
 #######################################################################

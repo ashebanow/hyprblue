@@ -55,8 +55,9 @@ bash ./1password.sh
 rm 1password.sh
 
 ### now install chrome via our own script
-install-chrome.sh
-rm install-chrome.sh
+chmod +x /tmp/install-chrome.sh
+/tmp/install-chrome.sh
+rm /tmp/install-chrome.sh
 
 # Note that these fedora font packages are preinstalled in the
 # bluefin-dx image, along with the SymbolsNerdFont which doesn't
@@ -152,15 +153,17 @@ if [[ $USE_SDDM == TRUE ]]; then
   )
 fi
 
-# 1password* and chrome are here because the browser<->extension
-# link in 1password doesn't work if either app is a flatpak.
 LAYERED_APPS=(
-  1password
-  1password-cli
-  google-chrome-stable
+  # 1password* and chrome are installed separately above.
+#   1password
+#   1password-cli
+#   google-chrome-stable
+
+  # We really should just pick one terminal emulator!
   ghostty
   kitty
   kitty-terminfo
+
   thunar
   thunar-volman
   thunar-archive-plugin

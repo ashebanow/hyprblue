@@ -157,7 +157,7 @@ fi
 LAYERED_APPS=(
   1password
   1password-cli
-#   google-chrome-stable
+  google-chrome-stable
   ghostty
   kitty
   kitty-terminfo

@@ -33,6 +33,8 @@ curl https://copr.fedorainfracloud.org/coprs/errornointernet/packages/repo/fedor
 curl https://copr.fedorainfracloud.org/coprs/tofik/sway/repo/fedora-${RELEASE}/tofik-sway-fedora-${RELEASE}.repo \
  -o /etc/yum.repos.d/tofik-sway.repo
 
+curl -Lo /etc/yum.repos.d/_copr_pgdev-ghostty-"${RELEASE}".repo https://copr.fedorainfracloud.org/coprs/pgdev/ghostty/repo/fedora-"${RELEASE}"/pgdev-ghostty-fedora-"${RELEASE}".repo
+
 if [[ $USE_NWG_SHELL == TRUE ]]; then
   curl https://copr.fedorainfracloud.org/coprs/tofik/nwg-shell/repo/fedora-${RELEASE}/tofik-nwg-shell-fedora-${RELEASE}.repo \
   -o /etc/yum.repos.d/tofik-nwg-shell.repo
@@ -41,15 +43,19 @@ if [[ $USE_NWG_SHELL == TRUE ]]; then
   -o /etc/yum.repos.d/mochaa-gtk-session-lock.repo
 fi
 
-# Install 1password repo.
-rpm --import https://downloads.1password.com/linux/keys/1password.asc
-echo -e "[1password]\nname=1Password Stable Channel\nbaseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=1\ngpgkey=\"https://downloads.1password.com/linux/keys/1password.asc\"" > /etc/yum.repos.d/1password.repo
-# rpm-ostree refresh-md --force
-
+# Remove firefox, and use the flatpak instead
+rpm-ostree override remove firefox firefox-langpacks
 
 #######################################################################
 ## Install Packages
 #######################################################################
+
+### Install 1password using blue-build script
+curl https://downloads.1password.com/linux/keys/1password.asc | tee /etc/pki/rpm-gpg/1password.gpg
+curl -Lo 1password.sh https://raw.githubusercontent.com/blue-build/modules/22fe11d844763bf30bd83028970b975676fe7beb/modules/bling/installers/1password.sh
+chmod +x 1password.sh
+bash ./1password.sh
+rm 1password.sh
 
 # Note that these fedora font packages are preinstalled in the
 # bluefin-dx image, along with the SymbolsNerdFont which doesn't
@@ -151,6 +157,7 @@ LAYERED_APPS=(
   1password
   1password-cli
 #   google-chrome-stable
+  ghostty
   kitty
   kitty-terminfo
   thunar

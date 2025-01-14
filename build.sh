@@ -21,31 +21,32 @@ USE_SDDM=FALSE
 # NOTE: chrome .repo file is installed in the Containerfile prior
 # to running this script.
 
-curl https://copr.fedorainfracloud.org/coprs/solopasha/hyprland/repo/fedora-${RELEASE}/solopasha-hyprland-fedora-${RELEASE}.repo \
- -o /etc/yum.repos.d/solopasha-hyprland.repo
-
-curl https://copr.fedorainfracloud.org/coprs/erikreider/SwayNotificationCenter/repo/fedora-${RELEASE}/erikreider-SwayNotificationCenter-fedora-${RELEASE}.repo \
- -o /etc/yum.repos.d/erikreider-SwayNotificationCenter.repo
-
-curl https://copr.fedorainfracloud.org/coprs/errornointernet/packages/repo/fedora-${RELEASE}/errornointernet-packages-fedora-${RELEASE}.repo \
- -o /etc/yum.repos.d/errornointernet-packages.repo
-
-curl https://copr.fedorainfracloud.org/coprs/tofik/sway/repo/fedora-${RELEASE}/tofik-sway-fedora-${RELEASE}.repo \
- -o /etc/yum.repos.d/tofik-sway.repo
-
-curl -Lo /etc/yum.repos.d/_copr_pgdev-ghostty-"${RELEASE}".repo https://copr.fedorainfracloud.org/coprs/pgdev/ghostty/repo/fedora-"${RELEASE}"/pgdev-ghostty-fedora-"${RELEASE}".repo
+dnf5 -y copr enable solopasha/hyprland
+dnf5 -y copr enable erikreider/SwayNotificationCenter
+dnf5 -y copr enable errornointernet/packages
+dnf5 -y copr enable tofik/sway
+dnf5 -y copr enable pgdev/ghostty
 
 if [[ $USE_NWG_SHELL == TRUE ]]; then
-  curl https://copr.fedorainfracloud.org/coprs/tofik/nwg-shell/repo/fedora-${RELEASE}/tofik-nwg-shell-fedora-${RELEASE}.repo \
-  -o /etc/yum.repos.d/tofik-nwg-shell.repo
-
-  curl https://copr.fedorainfracloud.org/coprs/mochaa/gtk-session-lock/repo/fedora-${RELEASE}/mochaa-gtk-session-lock-fedora-${RELEASE}.repo \
-  -o /etc/yum.repos.d/mochaa-gtk-session-lock.repo
+    dnf5 -y copr enable tofik/nwg-shell
 fi
 
 #######################################################################
 ## Install Packages
 #######################################################################
+
+# Packages can be installed from any enabled yum repo on the image.
+# RPMfusion repos are available by default in ublue main images
+
+# this installs a package from fedora repos
+# dnf install -y tmux
+
+# Use a COPR Example:
+#
+# dnf5 -y copr enable ublue-os/staging
+# dnf5 -y install package
+# Disable COPRs so they don't end up enabled on the final image:
+# dnf5 -y copr disable ublue-os/staging
 
 ### Install 1password using blue-build script
 curl https://downloads.1password.com/linux/keys/1password.asc | tee /etc/pki/rpm-gpg/1password.gpg
@@ -105,7 +106,6 @@ HYPR_DEPS=(
   qt6-qtsvg
   qt6ct
   slurp
-  SwayNotificationCenter
   swww
   tumbler
   wallust
@@ -153,12 +153,8 @@ if [[ $USE_SDDM == TRUE ]]; then
   )
 fi
 
+# 1password* and chrome are installed separately above.
 LAYERED_APPS=(
-  # 1password* and chrome are installed separately above.
-#   1password
-#   1password-cli
-#   google-chrome-stable
-
   # We really should just pick one terminal emulator!
   ghostty
   kitty
@@ -171,7 +167,7 @@ LAYERED_APPS=(
 
 # we do all package installs in one rpm-ostree command
 # so that we create minimal layers in the final image
-rpm-ostree install \
+dnf5 install -y \
   ${FONTS[@]} \
   ${HYPR_DEPS[@]} \
   ${HYPR_PKGS[@]} \
@@ -179,8 +175,18 @@ rpm-ostree install \
   ${NWG_SHELL_PKGS[@]} \
   ${LAYERED_APPS[@]}
 
-https://www.google.com/chrome/next-steps.html?statcb=0&installdataindex=empty&defaultbrowser=0#
+#######################################################################
+### Disable repositeories so they aren't cluttering up the final image
 
+dnf5 -y copr disable solopasha/hyprland
+dnf5 -y copr disable erikreider/SwayNotificationCenter
+dnf5 -y copr disable errornointernet/packages
+dnf5 -y copr disable tofik/sway
+dnf5 -y copr disable pgdev/ghostty
+
+if [[ $USE_NWG_SHELL == TRUE ]]; then
+    dnf5 -y copr disable tofik/nwg-shell
+fi
 
 #######################################################################
 ### Enable Services

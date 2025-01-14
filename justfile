@@ -8,7 +8,7 @@ act:
 
 # first, unsigned rebasing step. Reboot afterwards.
 rebase-unsigned:
-    rpm-ostree rebase ostree-unverified-registry:docker://ghcr.io/ashebanow/hyprblue:latest
+    rpm-ostree rebase ostree-unverified-registry:ghcr.io/ashebanow/hyprblue:latest
 
 # second and final signed rebasing step. Reboot afterwards.
 rebase-signed:

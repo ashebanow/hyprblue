@@ -89,13 +89,17 @@ HYPR_DEPS=(
   btop
   cava
   cliphist
+  egl-wayland
   eog
   fastfetch
   grim
   inxi
   kvantum
+  lib32-nvidia-utils
   mpv
 #   mpv-mpris
+  nvidia-dkms
+  nvidia-utils
   nwg-look
   pamixer
   pavucontrol

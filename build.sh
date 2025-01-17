@@ -89,17 +89,16 @@ HYPR_DEPS=(
   btop
   cava
   cliphist
-  egl-wayland
+  # egl-wayland
   eog
-  fastfetch
   grim
   inxi
   kvantum
-  lib32-nvidia-utils
+  # lib32-nvidia-utils
   mpv
 #   mpv-mpris
-  nvidia-dkms
-  nvidia-utils
+  # nvidia-dkms
+  # nvidia-utils
   nwg-look
   pamixer
   pavucontrol
@@ -107,7 +106,6 @@ HYPR_DEPS=(
   python3-pyquery
   qalculate-gtk
   qt5ct
-  qt6-qtsvg
   qt6ct
   slurp
   swww

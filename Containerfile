@@ -1,6 +1,6 @@
 FROM ghcr.io/ublue-os/bluefin-dx-nvidia:latest
 
-COPY build.sh install-chrome.sh /tmp/
+COPY build.sh /tmp/
 
 RUN mkdir -p /var/lib/alternatives && \
     /tmp/build.sh && \

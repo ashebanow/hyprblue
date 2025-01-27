@@ -48,18 +48,6 @@ fi
 # Disable COPRs so they don't end up enabled on the final image:
 # dnf5 -y copr disable ublue-os/staging
 
-### Install 1password using blue-build script
-curl https://downloads.1password.com/linux/keys/1password.asc | tee /etc/pki/rpm-gpg/1password.gpg
-curl -Lo 1password.sh https://raw.githubusercontent.com/blue-build/modules/22fe11d844763bf30bd83028970b975676fe7beb/modules/bling/installers/1password.sh
-chmod +x 1password.sh
-bash ./1password.sh
-rm 1password.sh
-
-### now install chrome via our own script
-chmod +x /tmp/install-chrome.sh
-/tmp/install-chrome.sh
-rm /tmp/install-chrome.sh
-
 # Note that these fedora font packages are preinstalled in the
 # bluefin-dx image, along with the SymbolsNerdFont which doesn't
 # have an associated fedora package:
@@ -194,10 +182,9 @@ fi
 ### Enable Services
 
 # Setting Thunar as the default file manager
-xdg-mime default thunar.desktop inode/directory
-xdg-mime default thunar.desktop application/x-wayland-gnome-saved-search
-
-# systemctl enable bluetooth.service
+# TODO: these need to be run at first boot, not during build
+# xdg-mime default thunar.desktop inode/directory
+# xdg-mime default thunar.desktop application/x-wayland-gnome-saved-search
 
 if [[ $USE_SDDM == TRUE ]]; then
     for login_manager in lightdm gdm lxdm lxdm-gtk3; do

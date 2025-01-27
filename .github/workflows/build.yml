@@ -145,7 +145,7 @@
             id: image_case
             uses: ASzc/change-string-case-action@v6
             with:
-            string: ${{ env.IMAGE_NAME }}
+                string: ${{ env.IMAGE_NAME }}
 
           - name: Push To GHCR
             uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2

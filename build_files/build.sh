@@ -84,10 +84,11 @@ HYPR_DEPS=(
   kvantum
   # lib32-nvidia-utils
   mpv
-#   mpv-mpris
+  # mpv-mpris
+  network-manager-applet
   # nvidia-dkms
   # nvidia-utils
-  nwg-look
+  # nwg-look
   pamixer
   pavucontrol
   playerctl
@@ -95,31 +96,38 @@ HYPR_DEPS=(
   qalculate-gtk
   qt5ct
   qt6ct
+  rofi-wayland
   slurp
+  swappy
+  swaync
   swww
   tumbler
   wallust
+  waybar
   wget2
   wl-clipboard
+  wlogout
   wlr-randr
   xarchiver
+  xdg-desktop-portal-hyprland
+  xdg-desktop-portal-gtk
   yad
 )
 
 # Hyprland ecosystem packages
 HYPR_PKGS=(
-  hyprcursor
   hyprland
+  hyprcursor
+  hyprpaper
+  hyprpicker
   hypridle
   hyprlock
-  network-manager-applet
-  rofi-wayland
-  swappy
-  swaync
-  waybar
-  wlogout
   xdg-desktop-portal-hyprland
-  xdg-desktop-portal-gtk
+  hyprsysteminfo
+  hyprsunset
+  hyprpolkitagent
+  hyprland-qt-support
+  hyprutils
 )
 
 # See https://github.com/nwg-piotr/nwg-shell/blob/main/install/fedora-ostree.sh

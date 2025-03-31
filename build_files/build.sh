@@ -26,6 +26,7 @@ dnf5 -y copr enable erikreider/SwayNotificationCenter
 dnf5 -y copr enable errornointernet/packages
 dnf5 -y copr enable tofik/sway
 dnf5 -y copr enable pgdev/ghostty
+dnf5 -y copr enable victorvintorez/tilingtools
 
 if [[ $USE_NWG_SHELL == TRUE ]]; then
     dnf5 -y copr enable tofik/nwg-shell
@@ -81,6 +82,7 @@ HYPR_DEPS=(
   eog
   grim
   inxi
+  ironbar
   kvantum
   # lib32-nvidia-utils
   mpv
@@ -181,6 +183,7 @@ dnf5 -y copr disable erikreider/SwayNotificationCenter
 dnf5 -y copr disable errornointernet/packages
 dnf5 -y copr disable tofik/sway
 dnf5 -y copr disable pgdev/ghostty
+dnf5 -y copr enable victorvintorez/tilingtools
 
 if [[ $USE_NWG_SHELL == TRUE ]]; then
     dnf5 -y copr disable tofik/nwg-shell

@@ -183,7 +183,7 @@ dnf5 -y copr disable erikreider/SwayNotificationCenter
 dnf5 -y copr disable errornointernet/packages
 dnf5 -y copr disable tofik/sway
 dnf5 -y copr disable pgdev/ghostty
-dnf5 -y copr enable victorvintorez/tilingtools
+dnf5 -y copr disable victorvintorez/tilingtools
 
 if [[ $USE_NWG_SHELL == TRUE ]]; then
     dnf5 -y copr disable tofik/nwg-shell

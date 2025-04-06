@@ -204,7 +204,7 @@ _build-bib $target_image $tag $type $config: (_rootful_load_image target_image t
       --net=host \
       --security-opt label=type:unconfined_t \
       -v $(pwd)/${config}:/config.toml:ro \
-      -v $(BUILDTMP):/output \
+      -v $BUILDTMP:/output \
       -v /var/lib/containers/storage:/var/lib/containers/storage \
       "${bib_image}" \
       ${args} \

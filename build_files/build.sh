@@ -94,7 +94,7 @@ HYPR_DEPS=(
   pamixer
   pavucontrol
   playerctl
-  power-profiles-daemon
+  # power-profiles-daemon
   python3-pyquery
   qalculate-gtk
   qt5ct

@@ -22,7 +22,7 @@ dnf5 -y copr enable errornointernet/packages
 dnf5 -y copr enable tofik/sway
 dnf5 -y copr enable pgdev/ghostty
 dnf5 -y copr enable heus-sueh/packages
-dnf5 config-manager --save --setopt=copr:copr.fedorainfracloud.org:heus-sueh:packages.priority=200
+# dnf5 config-manager setopt copr:copr.fedorainfracloud.org:heus-sueh:packages.priority=200
 
 #######################################################################
 ## Install Packages

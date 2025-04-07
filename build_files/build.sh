@@ -4,11 +4,6 @@ set -ouex pipefail
 
 RELEASE="$(rpm -E %fedora)"
 
-# if true, the binaries needed for nwg-shell will be installed.
-# Includes all of sway, though only swaync is used.
-# NOTE: NOT FULLY IMPLEMENTED AND UNTESTED, DO NOT USE YET
-USE_NWG_SHELL=FALSE
-
 # if true, sddm will be installed as the display manager.
 # NOTE: NOT FULLY IMPLEMENTED AND UNTESTED, DO NOT USE YET
 USE_SDDM=FALSE
@@ -26,10 +21,8 @@ dnf5 -y copr enable erikreider/SwayNotificationCenter
 dnf5 -y copr enable errornointernet/packages
 dnf5 -y copr enable tofik/sway
 dnf5 -y copr enable pgdev/ghostty
-
-if [[ $USE_NWG_SHELL == TRUE ]]; then
-  dnf5 -y copr enable tofik/nwg-shell
-fi
+dnf5 -y copr enable heus-sueh/packages
+dnf5 config-manager --save --setopt=copr:copr.fedorainfracloud.org:heus-sueh:packages.priority=200
 
 #######################################################################
 ## Install Packages
@@ -71,7 +64,9 @@ FONTS=(
 # from ml4w and other sources.
 HYPR_DEPS=(
   aquamarine
+  aylurs-gtk-shell2
   blueman
+  bluez
   bluez-tools
   brightnessctl
   btop
@@ -79,19 +74,27 @@ HYPR_DEPS=(
   cliphist
   # egl-wayland
   eog
+  gnome-bluetooth
   grim
+  grimblast
+  gvfs
+  hyprpanel
   inxi
   kvantum
   # lib32-nvidia-utils
+  libgtop2
+  matugen
   mpv
   # mpv-mpris
   network-manager-applet
+  nodejs
   # nvidia-dkms
   # nvidia-utils
-  # nwg-look
+  nwg-look
   pamixer
   pavucontrol
   playerctl
+  power-profiles-daemon
   python3-pyquery
   qalculate-gtk
   qt5ct
@@ -102,15 +105,17 @@ HYPR_DEPS=(
   swaync
   swww
   tumbler
+  upower
   wallust
   waybar
   wget2
+  wireplumber
   wl-clipboard
   wlogout
   wlr-randr
   xarchiver
-  xdg-desktop-portal-hyprland
   xdg-desktop-portal-gtk
+  xdg-desktop-portal-hyprland
   yad
 )
 
@@ -129,15 +134,6 @@ HYPR_PKGS=(
   hyprland-qt-support
   hyprutils
 )
-
-# See https://github.com/nwg-piotr/nwg-shell/blob/main/install/fedora-ostree.sh
-NWG_SHELL_PKGS=()
-if [[ $USE_NWG_SHELL == TRUE ]]; then
-  NWG_SHELL_PKGS=(
-    nwg-shell
-    gtklock
-  )
-fi
 
 # SDDM not set up properly yet, so this is just a placeholder.
 # For now you'll have to invoke Hyprland from the command line.
@@ -170,7 +166,6 @@ dnf5 install -y \
   ${HYPR_DEPS[@]} \
   ${HYPR_PKGS[@]} \
   ${SDDM_PACKAGES[@]} \
-  ${NWG_SHELL_PKGS[@]} \
   ${LAYERED_APPS[@]}
 
 #######################################################################
@@ -181,10 +176,7 @@ dnf5 -y copr disable erikreider/SwayNotificationCenter
 dnf5 -y copr disable errornointernet/packages
 dnf5 -y copr disable tofik/sway
 dnf5 -y copr disable pgdev/ghostty
-
-if [[ $USE_NWG_SHELL == TRUE ]]; then
-  dnf5 -y copr disable tofik/nwg-shell
-fi
+dnf5 -y copr disable heus-sueh/packages
 
 #######################################################################
 ### Enable Services

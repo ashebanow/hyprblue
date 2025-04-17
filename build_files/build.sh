@@ -17,29 +17,16 @@ USE_SDDM=FALSE
 # to running this script.
 
 dnf5 -y copr enable solopasha/hyprland
-dnf5 -y copr enable erikreider/SwayNotificationCenter
+dnf5 -y copr enable erikreider/SwayNotificationCenter     # for swaync
 dnf5 -y copr enable errornointernet/packages
 dnf5 -y copr enable tofik/sway
-dnf5 -y copr enable pgdev/ghostty
-dnf5 -y copr enable heus-sueh/packages
+# dnf5 -y copr enable pgdev/ghostty
+dnf5 -y copr enable heus-sueh/packages                    # for matugen/swww, needed by hyprpanel
 # dnf5 config-manager setopt copr:copr.fedorainfracloud.org:heus-sueh:packages.priority=200
 
 #######################################################################
 ## Install Packages
 #######################################################################
-
-# Packages can be installed from any enabled yum repo on the image.
-# RPMfusion repos are available by default in ublue main images
-
-# this installs a package from fedora repos
-# dnf install -y tmux
-
-# Use a COPR Example:
-#
-# dnf5 -y copr enable ublue-os/staging
-# dnf5 -y install package
-# Disable COPRs so they don't end up enabled on the final image:
-# dnf5 -y copr disable ublue-os/staging
 
 # Note that these fedora font packages are preinstalled in the
 # bluefin-dx image, along with the SymbolsNerdFont which doesn't
@@ -147,10 +134,10 @@ if [[ $USE_SDDM == TRUE ]]; then
   )
 fi
 
-# 1password* and chrome are installed separately above.
+# bitwarden and chrome are installed as flatpaks.
 LAYERED_APPS=(
-  # We really should just pick one terminal emulator!
-  ghostty
+  # ghostty is broken in Fedora 42 right now
+  # ghostty
   kitty
   kitty-terminfo
 
@@ -175,7 +162,7 @@ dnf5 -y copr disable solopasha/hyprland
 dnf5 -y copr disable erikreider/SwayNotificationCenter
 dnf5 -y copr disable errornointernet/packages
 dnf5 -y copr disable tofik/sway
-dnf5 -y copr disable pgdev/ghostty
+# dnf5 -y copr disable pgdev/ghostty
 dnf5 -y copr disable heus-sueh/packages
 
 #######################################################################

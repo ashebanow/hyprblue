@@ -1,5 +1,6 @@
 export repo_organization := env("GITHUB_REPOSITORY_OWNER", "ashebanow")
-export image_name := env("IMAGE_NAME", "hyprblue")
+# export image_name := env("IMAGE_NAME", "hyprblue")
+export image_name := env("IMAGE_NAME", "hyprbazz")
 export centos_version := env("CENTOS_VERSION", "stream10")
 export fedora_version := env("CENTOS_VERSION", "42")
 export default_tag := env("DEFAULT_TAG", "latest")

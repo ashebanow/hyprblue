@@ -134,8 +134,10 @@ if [[ $USE_SDDM == TRUE ]]; then
   )
 fi
 
-# bitwarden and chrome are installed as flatpaks.
-LAYERED_APPS=(
+# chrome etc are installed as flatpaks. We generally prefer that
+# for most things with GUIs, and homebrew for CLI apps. This list is
+# only special GUI apps that need to be installed at the system level.
+ADDITIONAL_SYSTEM_APPS=(
   # ghostty is broken in Fedora 42 right now
   # ghostty
   kitty
@@ -153,7 +155,7 @@ dnf5 install -y \
   ${HYPR_DEPS[@]} \
   ${HYPR_PKGS[@]} \
   ${SDDM_PACKAGES[@]} \
-  ${LAYERED_APPS[@]}
+  ${ADDITIONAL_SYSTEM_APPS[@]}
 
 #######################################################################
 ### Disable repositeories so they aren't cluttering up the final image
@@ -168,8 +170,9 @@ dnf5 -y copr disable heus-sueh/packages
 #######################################################################
 ### Enable Services
 
+# TODO: these need to be run at first boot, not during image build
+
 # Setting Thunar as the default file manager
-# TODO: these need to be run at first boot, not during build
 # xdg-mime default thunar.desktop inode/directory
 # xdg-mime default thunar.desktop application/x-wayland-gnome-saved-search
 

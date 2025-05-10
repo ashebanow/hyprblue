@@ -17,12 +17,13 @@ USE_SDDM=FALSE
 # to running this script.
 
 dnf5 -y copr enable solopasha/hyprland
-dnf5 -y copr enable erikreider/SwayNotificationCenter       # for swaync
+dnf5 -y copr enable leloubil/wl-clip-persist
+dnf5 -y copr enable erikreider/SwayNotificationCenter # for swaync
 dnf5 -y copr enable errornointernet/packages
 dnf5 -y copr enable tofik/sway
-dnf5 -y copr enable enmanuelmoreira/mapanare-labs           # for windsurf
+dnf5 -y copr enable enmanuelmoreira/mapanare-labs # for windsurf
 # dnf5 -y copr enable pgdev/ghostty
-dnf5 -y copr enable heus-sueh/packages                    # for matugen/swww, needed by hyprpanel
+dnf5 -y copr enable heus-sueh/packages # for matugen/swww, needed by hyprpanel
 # dnf5 config-manager setopt copr:copr.fedorainfracloud.org:heus-sueh:packages.priority=200
 
 #######################################################################
@@ -99,6 +100,7 @@ HYPR_DEPS=(
   wget2
   wireplumber
   wl-clipboard
+  wl-clip-persist
   wlogout
   wlr-randr
   xarchiver
@@ -115,6 +117,7 @@ HYPR_PKGS=(
   hyprpicker
   hypridle
   hyprlock
+  hyprshot
   xdg-desktop-portal-hyprland
   hyprsysteminfo
   hyprsunset
@@ -164,6 +167,7 @@ dnf5 install -y \
 ### Disable repositeories so they aren't cluttering up the final image
 
 dnf5 -y copr disable solopasha/hyprland
+dnf5 -y copr disable leloubil/wl-clip-persist
 dnf5 -y copr disable erikreider/SwayNotificationCenter
 dnf5 -y copr disable errornointernet/packages
 dnf5 -y copr disable tofik/sway

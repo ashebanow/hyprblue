@@ -17,9 +17,10 @@ USE_SDDM=FALSE
 # to running this script.
 
 dnf5 -y copr enable solopasha/hyprland
-dnf5 -y copr enable erikreider/SwayNotificationCenter     # for swaync
+dnf5 -y copr enable erikreider/SwayNotificationCenter       # for swaync
 dnf5 -y copr enable errornointernet/packages
 dnf5 -y copr enable tofik/sway
+dnf5 -y copr enable enmanuelmoreira/mapanare-labs           # for windsurf
 # dnf5 -y copr enable pgdev/ghostty
 dnf5 -y copr enable heus-sueh/packages                    # for matugen/swww, needed by hyprpanel
 # dnf5 config-manager setopt copr:copr.fedorainfracloud.org:heus-sueh:packages.priority=200
@@ -146,6 +147,8 @@ ADDITIONAL_SYSTEM_APPS=(
   thunar
   thunar-volman
   thunar-archive-plugin
+
+  Windsurf
 )
 
 # we do all package installs in one rpm-ostree command
@@ -164,6 +167,7 @@ dnf5 -y copr disable solopasha/hyprland
 dnf5 -y copr disable erikreider/SwayNotificationCenter
 dnf5 -y copr disable errornointernet/packages
 dnf5 -y copr disable tofik/sway
+dnf5 -y copr disable enmanuelmoreira/mapanare-labs
 # dnf5 -y copr disable pgdev/ghostty
 dnf5 -y copr disable heus-sueh/packages
 

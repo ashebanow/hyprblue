@@ -17,6 +17,8 @@ USE_SDDM=FALSE
 # to running this script.
 
 dnf5 -y copr enable solopasha/hyprland
+dnf5 -y copr enable yalter/niri
+dnf5 -y copr enable ulysg/xwayland-satellite
 dnf5 -y copr enable leloubil/wl-clip-persist
 dnf5 -y copr enable erikreider/SwayNotificationCenter # for swaync
 dnf5 -y copr enable errornointernet/packages
@@ -63,6 +65,7 @@ HYPR_DEPS=(
   cliphist
   # egl-wayland
   eog
+  fuzzel
   gnome-bluetooth
   grim
   grimblast
@@ -72,6 +75,7 @@ HYPR_DEPS=(
   kvantum
   # lib32-nvidia-utils
   libgtop2
+  mako
   matugen
   mpv
   # mpv-mpris
@@ -106,6 +110,7 @@ HYPR_DEPS=(
   xarchiver
   xdg-desktop-portal-gtk
   xdg-desktop-portal-hyprland
+  xwayland-satellite
   yad
 )
 
@@ -126,6 +131,24 @@ HYPR_PKGS=(
   hyprutils
 )
 
+# Niri and its dependencies from its default config.
+# commented out packages are already referenced in this file, OR they
+# are prebundled inside our parent image.
+NIRI_PKGS=(
+    niri
+    swaylock
+    # alacritty
+    # brightnessctl
+    # fuzzel
+    # mako
+    # waybar
+    # xwayland-satellite
+    # gnome-keyring
+    # wireplumber
+    # xdg-desktop-portal-gnome
+    # xdg-desktop-portal-gtk
+)
+
 # SDDM not set up properly yet, so this is just a placeholder.
 # For now you'll have to invoke Hyprland from the command line.
 SDDM_PACKAGES=()
@@ -142,8 +165,11 @@ fi
 # for most things with GUIs, and homebrew for CLI apps. This list is
 # only special GUI apps that need to be installed at the system level.
 ADDITIONAL_SYSTEM_APPS=(
+  alacritty
+
   # ghostty is broken in Fedora 42 right now
   # ghostty
+
   kitty
   kitty-terminfo
 
@@ -160,6 +186,7 @@ dnf5 install -y \
   ${FONTS[@]} \
   ${HYPR_DEPS[@]} \
   ${HYPR_PKGS[@]} \
+  ${NIRI_PKGS[@]} \
   ${SDDM_PACKAGES[@]} \
   ${ADDITIONAL_SYSTEM_APPS[@]}
 
@@ -167,6 +194,8 @@ dnf5 install -y \
 ### Disable repositeories so they aren't cluttering up the final image
 
 dnf5 -y copr disable solopasha/hyprland
+dnf5 -y copr disable yalter/niri
+dnf5 -y copr disable ulysg/xwayland-satellite
 dnf5 -y copr disable leloubil/wl-clip-persist
 dnf5 -y copr disable erikreider/SwayNotificationCenter
 dnf5 -y copr disable errornointernet/packages

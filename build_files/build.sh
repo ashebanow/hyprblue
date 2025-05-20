@@ -4,6 +4,10 @@ set -ouex pipefail
 
 RELEASE="$(rpm -E %fedora)"
 
+log() {
+  echo "=== $* ==="
+}
+
 # if true, sddm will be installed as the display manager.
 # NOTE: NOT FULLY IMPLEMENTED AND UNTESTED, DO NOT USE YET
 USE_SDDM=FALSE
@@ -12,21 +16,26 @@ USE_SDDM=FALSE
 # Setup Repositories
 #######################################################################
 
-# NOTE: RPMFusion repos are available by default
-# NOTE: chrome .repo file is installed in the Containerfile prior
-# to running this script.
+log "Enable Copr repos..."
+COPR_REPOS=(
+    enmanuelmoreira/mapanare-labs       # for windsurf
+    erikreider/SwayNotificationCenter   # for swaync
+    errornointernet/packages
+    heus-sueh/packages                  # for matugen/swww, needed by hyprpanel
+    leloubil/wl-clip-persist
+    # pgdev/ghostty
+    solopasha/hyprland
+    tofik/sway
+    ulysg/xwayland-satellite
+    yalter/niri
+)
+for repo in "${COPR_REPOS[@]}"; do
+  dnf5 -y copr enable "$repo"
+done
 
-dnf5 -y copr enable solopasha/hyprland
-dnf5 -y copr enable yalter/niri
-dnf5 -y copr enable ulysg/xwayland-satellite
-dnf5 -y copr enable leloubil/wl-clip-persist
-dnf5 -y copr enable erikreider/SwayNotificationCenter # for swaync
-dnf5 -y copr enable errornointernet/packages
-dnf5 -y copr enable tofik/sway
-dnf5 -y copr enable enmanuelmoreira/mapanare-labs # for windsurf
-# dnf5 -y copr enable pgdev/ghostty
-dnf5 -y copr enable heus-sueh/packages # for matugen/swww, needed by hyprpanel
-# dnf5 config-manager setopt copr:copr.fedorainfracloud.org:heus-sueh:packages.priority=200
+# log "Enable terra repositories..."
+# Bazzite disabled this for some reason so lets re-enable it again
+# dnf5 config-manager setopt terra.enabled=1 terra-extras.enabled=1
 
 #######################################################################
 ## Install Packages
@@ -182,7 +191,8 @@ ADDITIONAL_SYSTEM_APPS=(
 
 # we do all package installs in one rpm-ostree command
 # so that we create minimal layers in the final image
-dnf5 install -y \
+log "Installing packages using dnf5..."
+dnf5 install --setopt=install_weak_deps=False -y \
   ${FONTS[@]} \
   ${HYPR_DEPS[@]} \
   ${HYPR_PKGS[@]} \
@@ -193,16 +203,10 @@ dnf5 install -y \
 #######################################################################
 ### Disable repositeories so they aren't cluttering up the final image
 
-dnf5 -y copr disable solopasha/hyprland
-dnf5 -y copr disable yalter/niri
-dnf5 -y copr disable ulysg/xwayland-satellite
-dnf5 -y copr disable leloubil/wl-clip-persist
-dnf5 -y copr disable erikreider/SwayNotificationCenter
-dnf5 -y copr disable errornointernet/packages
-dnf5 -y copr disable tofik/sway
-dnf5 -y copr disable enmanuelmoreira/mapanare-labs
-# dnf5 -y copr disable pgdev/ghostty
-dnf5 -y copr disable heus-sueh/packages
+log "Disable Copr repos to get rid of clutter..."
+for repo in "${COPR_REPOS[@]}"; do
+  dnf5 -y copr disable "$repo"
+done
 
 #######################################################################
 ### Enable Services
@@ -214,6 +218,7 @@ dnf5 -y copr disable heus-sueh/packages
 # xdg-mime default thunar.desktop application/x-wayland-gnome-saved-search
 
 if [[ $USE_SDDM == TRUE ]]; then
+  log "Installing sddm...."
   for login_manager in lightdm gdm lxdm lxdm-gtk3; do
     if sudo dnf list installed "$login_manager" &>>/dev/null; then
       sudo systemctl disable "$login_manager" 2>&1 | tee -a "$LOG"

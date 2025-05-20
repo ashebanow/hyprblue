@@ -286,7 +286,7 @@ _run-vm $target_image $tag $type $config:
     run_args+=(--env "GPU=Y")
     run_args+=(--device=/dev/kvm)
     run_args+=(--volume "${PWD}/${image_file}":"/boot.${type}")
-    run_args+=(docker.io/qemux/qemu-docker)
+    run_args+=(docker.io/qemux/qemu)
 
     # Run the VM and open the browser to connect
     (sleep 30 && xdg-open http://localhost:"$port") &
@@ -325,8 +325,24 @@ spawn-vm rebuild="0" type="qcow2" ram="6G":
 
 # Runs shell check on all Bash scripts
 lint:
+    #!/usr/bin/env bash
+    set -eoux pipefail
+    # Check if shellcheck is installed
+    if ! command -v shellcheck &> /dev/null; then
+        echo "shellcheck could not be found. Please install it."
+        exit 1
+    fi
+    # Run shellcheck on all Bash scripts
     /usr/bin/find . -iname "*.sh" -type f -exec shellcheck "{}" ';'
 
 # Runs shfmt on all Bash scripts
 format:
+    #!/usr/bin/env bash
+    set -eoux pipefail
+    # Check if shfmt is installed
+    if ! command -v shfmt &> /dev/null; then
+        echo "shellcheck could not be found. Please install it."
+        exit 1
+    fi
+    # Run shfmt on all Bash scripts
     /usr/bin/find . -iname "*.sh" -type f -exec shfmt --write "{}" ';'

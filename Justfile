@@ -12,7 +12,6 @@ default:
     @just --list
 
 # Check Just Syntax
-[group('Just')]
 check:
     #!/usr/bin/bash
     find . -type f -name "*.just" | while read -r file; do
@@ -23,7 +22,6 @@ check:
     just --unstable --fmt --check -f Justfile
 
 # Fix Just Syntax
-[group('Just')]
 fix:
     #!/usr/bin/bash
     find . -type f -name "*.just" | while read -r file; do
@@ -34,7 +32,6 @@ fix:
     just --unstable --fmt -f Justfile || { exit 1; }
 
 # Clean Repo
-[group('Utility')]
 clean:
     #!/usr/bin/bash
     set -eoux pipefail
@@ -46,13 +43,11 @@ clean:
     rm -f output/
 
 # Sudo Clean Repo
-[group('Utility')]
 [private]
 sudo-clean:
     just sudoif just clean
 
 # sudoif bash function
-[group('Utility')]
 [private]
 sudoif command *args:
     #!/usr/bin/bash
@@ -199,27 +194,21 @@ _build-bib $target_image $tag $type $config: (_rootful_load_image target_image t
 _rebuild-bib $target_image $tag $type $config: (build target_image tag) && (_build-bib target_image tag type config)
 
 # Build a QCOW2 virtual machine image
-[group('Build Virtal Machine Image')]
 build-qcow2 $target_image=("localhost/" + image_name) $tag=default_tag: && (_build-bib target_image tag "qcow2" "disk_config/disk.toml")
 
 # Build a RAW virtual machine image
-[group('Build Virtal Machine Image')]
 build-raw $target_image=("localhost/" + image_name) $tag=default_tag: && (_build-bib target_image tag "raw" "disk_config/disk.toml")
 
 # Build an ISO virtual machine image
-[group('Build Virtal Machine Image')]
 build-iso $target_image=("localhost/" + image_name) $tag=default_tag: && (_build-bib target_image tag "iso" "disk_config/iso.toml")
 
 # Rebuild a QCOW2 virtual machine image
-[group('Build Virtal Machine Image')]
 rebuild-qcow2 $target_image=("localhost/" + image_name) $tag=default_tag: && (_rebuild-bib target_image tag "qcow2" "disk_config/disk.toml")
 
 # Rebuild a RAW virtual machine image
-[group('Build Virtal Machine Image')]
 rebuild-raw $target_image=("localhost/" + image_name) $tag=default_tag: && (_rebuild-bib target_image tag "raw" "disk_config/disk.toml")
 
 # Rebuild an ISO virtual machine image
-[group('Build Virtal Machine Image')]
 rebuild-iso $target_image=("localhost/" + image_name) $tag=default_tag: && (_rebuild-bib target_image tag "iso" "disk_config/iso.toml")
 
 # Run a virtual machine with the specified image type and configuration
@@ -265,19 +254,15 @@ _run-vm $target_image $tag $type $config:
     podman run "${run_args[@]}"
 
 # Run a virtual machine from a QCOW2 image
-[group('Run Virtal Machine')]
 run-vm-qcow2 $target_image=("localhost/" + image_name) $tag=default_tag: && (_run-vm target_image tag "qcow2" "disk_config/disk.toml")
 
 # Run a virtual machine from a RAW image
-[group('Run Virtal Machine')]
 run-vm-raw $target_image=("localhost/" + image_name) $tag=default_tag: && (_run-vm target_image tag "raw" "disk_config/disk.toml")
 
 # Run a virtual machine from an ISO
-[group('Run Virtal Machine')]
 run-vm-iso $target_image=("localhost/" + image_name) $tag=default_tag: && (_run-vm target_image tag "iso" "disk_config/iso.toml")
 
 # Run a virtual machine using systemd-vmspawn
-[group('Run Virtal Machine')]
 spawn-vm rebuild="0" type="qcow2" ram="6G":
     #!/usr/bin/env bash
 
@@ -293,7 +278,6 @@ spawn-vm rebuild="0" type="qcow2" ram="6G":
       --network-user-mode \
       --vsock=false --pass-ssh-key=false \
       -i ./output/**/*.{{ type }}
-
 
 # Runs shell check on all Bash scripts
 lint:
@@ -318,3 +302,28 @@ format:
     fi
     # Run shfmt on all Bash scripts
     /usr/bin/find . -iname "*.sh" -type f -exec shfmt --write "{}" ';'
+
+# Rebase system to unsigned hyprblue image
+rebase-unsigned:
+    #!/usr/bin/env bash
+    set -eoux pipefail
+    echo "Rebasing system to unsigned hyprblue image..."
+    sudo bootc switch --mutate-in-place --transport registry ghcr.io/{{ repo_organization }}/{{ image_name }}:{{ default_tag }}
+    echo "Rebase complete! Please reboot your system."
+
+# Rebase system to signed hyprblue image with signature verification
+rebase-signed:
+    #!/usr/bin/env bash
+    set -eoux pipefail
+    echo "Rebasing system to signed hyprblue image with signature verification..."
+    # First, add the cosign public key for signature verification
+    if [[ -f "cosign.pub" ]]; then
+        sudo mkdir -p /etc/pki/containers
+        sudo cp cosign.pub /etc/pki/containers/hyprblue.pub
+        echo "Cosign public key installed for signature verification."
+    else
+        echo "Warning: cosign.pub not found, signature verification may not work."
+    fi
+    # Rebase to the signed image
+    sudo bootc switch --mutate-in-place --transport registry ghcr.io/{{ repo_organization }}/{{ image_name }}:{{ default_tag }}
+    echo "Rebase complete! Please reboot your system."

@@ -15,7 +15,7 @@ they aren't both in the base image.
 just commands locally):
 
     ```bash
-    curl https://raw.githubusercontent.com/ashebanow/hyprblue/master/justfile \
+    curl https://raw.githubusercontent.com/ashebanow/hyprblue/refs/heads/main/Justfile \
         > /tmp/hyprblue-justfile
     just -f /tmp/hyprblue-justfile rebase-unsigned
     ```
@@ -25,7 +25,7 @@ just commands locally):
 4. Run the following command:
 
     ```bash
-    curl https://raw.githubusercontent.com/ashebanow/hyprblue/master/justfile \
+    curl https://raw.githubusercontent.com/ashebanow/hyprblue/refs/heads/main/Justfile \
         > /tmp/hyprblue-justfile
     just -f /tmp/hyprblue-justfile rebase-signed
     ```

@@ -185,8 +185,6 @@ ADDITIONAL_SYSTEM_APPS=(
   thunar
   thunar-volman
   thunar-archive-plugin
-
-  Windsurf
 )
 
 # we do all package installs in one rpm-ostree command

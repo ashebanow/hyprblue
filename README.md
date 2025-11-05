@@ -1,28 +1,88 @@
-# HyprBlue
+# HyprBlue & HyprBazzite
 
-# Purpose
+## Purpose
 
-HyprBlue is a variant of [Bluefin](https://projectbluefin.io/) that comes with
-a pretty complete Hyprland install, in addition to Gnome. It also has Google
-Chrome and 1Password preinstalled, because they don't work together right if
-they aren't both in the base image.
+Custom bootc images based on [Universal Blue](https://universal-blue.org/) that come with a complete Hyprland and Niri install, in addition to their base desktop environments (Gnome for Bluefin, KDE for Bazzite). Also includes Google Chrome and 1Password preinstalled for proper integration.
 
-# How to Use
+## Available Image Variants
 
-1.  Install bluefin-dx or bluefin-nvidia-dx from ISO. Set up LUKS/TPM/Secure Boot as needed.
+All images are available at `ghcr.io/ashebanow/`:
 
-2.  Run the following command (or, alternatively, check out this repo and run the
-    just commands locally):
+### HyprBlue (Based on Bluefin)
+- **`hyprblue-nvidia`** - NVIDIA GPU support (based on `bluefin-dx-nvidia:latest`)
+- **`hyprblue-open-video`** - Open source video drivers (based on `bluefin-dx:latest`)
+- **`hyprblue`** - Alias for `hyprblue-nvidia` (for backwards compatibility)
 
-        ```bash
-        sudo bootc switch ghcr.io/ashebanow/hyprblue
-        ```
+### HyprBazzite (Based on Bazzite)
+- **`hyprbazzite-nvidia`** - NVIDIA GPU support (based on `bazzite-nvidia:latest`)
+- **`hyprbazzite-open-video`** - Open source video drivers (based on `bazzite:latest`)
 
-3.  Reboot your computer again, but do **NOT** select Hyprland from the login screen.
+## Important Notes
 
-4.  At this point, you should have the default, very very basic Hyprland setup. Now is the time to install your favorite dotfiles. If you don't have a working Hyprland setup of your own, I recommend taking a look at [JaKoolit's](https://github.com/JaKooLit/Hyprland-Dots) dotfiles or those at [ml4w.com](ml4w.com). Right now the easiest way to get those working is to install them into an Arch VM, where they will install all the needed packages along with the dotfiles. Then copy the necessary config files to this system.
+### HyprBazzite Limitations
 
-    NOTE: I do plan on building a script that will do this copying/setup for you at some point.
+Due to Qt version conflicts between Bazzite (Qt 6.10) and current Hyprland COPR packages (Qt 6.9), the following Qt-dependent packages are **not included** in HyprBazzite variants:
+
+- `hyprsysteminfo` - System info tool (use alternatives like `inxi`)
+- `hyprpolkitagent` - Hyprland-specific polkit agent (KDE's polkit agent will be used instead)
+- `hyprland-qt-support` - Qt integration support
+
+**Polkit Agent Workaround:** Since `hyprpolkitagent` is not available, you'll need to configure KDE's polkit agent to float properly in Hyprland. Add this to your Hyprland config:
+
+```
+windowrulev2 = float, class:^(org.kde.polkit-kde-authentication-agent-1)$
+windowrulev2 = center, class:^(org.kde.polkit-kde-authentication-agent-1)$
+```
+
+Alternatively, install `polkit-gnome` and configure it to autostart.
+
+These packages will be added back when the COPR maintainer rebuilds them against Qt 6.10.
+
+## How to Use
+
+### 1. Install Base System
+
+Install either Bluefin or Bazzite from ISO:
+- For HyprBlue: Install bluefin-dx or bluefin-dx-nvidia
+- For HyprBazzite: Install bazzite or bazzite-nvidia
+
+Set up LUKS/TPM/Secure Boot as needed during installation.
+
+### 2. Switch to Custom Image
+
+Choose the appropriate variant for your system:
+
+```bash
+# For NVIDIA systems (HyprBlue):
+sudo bootc switch ghcr.io/ashebanow/hyprblue-nvidia
+
+# For non-NVIDIA systems (HyprBlue):
+sudo bootc switch ghcr.io/ashebanow/hyprblue-open-video
+
+# For NVIDIA systems (HyprBazzite):
+sudo bootc switch ghcr.io/ashebanow/hyprbazzite-nvidia
+
+# For non-NVIDIA systems (HyprBazzite):
+sudo bootc switch ghcr.io/ashebanow/hyprbazzite-open-video
+
+# Legacy alias (points to hyprblue-nvidia):
+sudo bootc switch ghcr.io/ashebanow/hyprblue
+```
+
+### 3. Reboot and Configure
+
+Reboot your computer, but do **NOT** select Hyprland/Niri from the login screen yet.
+
+### 4. Install Dotfiles
+
+At this point, you should have the default, minimal Hyprland/Niri setup. Now is the time to install your favorite dotfiles. If you don't have a working configuration:
+
+- [JaKooLit's Hyprland Dots](https://github.com/JaKooLit/Hyprland-Dots)
+- [ml4w.com](https://ml4w.com)
+
+The easiest way to get these working is to install them into an Arch VM first, then copy the necessary config files to your system.
+
+**NOTE:** A setup script to automate this process is planned for the future.
 
 ---
 

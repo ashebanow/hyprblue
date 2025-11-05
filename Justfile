@@ -1,6 +1,7 @@
 export repo_organization := env("GITHUB_REPOSITORY_OWNER", "ashebanow")
-export image_name := env("IMAGE_NAME", "hyprblue")
+export image_name := env("IMAGE_NAME", "hyprblue-nvidia")
 export default_tag := env("DEFAULT_TAG", "latest")
+export base_image := env("BASE_IMAGE", "ghcr.io/ublue-os/bluefin-dx-nvidia:latest")
 export bib_image := env("BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest")
 
 alias build-vm := build-qcow2
@@ -10,6 +11,44 @@ alias run-vm := run-vm-qcow2
 [private]
 default:
     @just --list
+
+# Build the HyprBlue NVIDIA variant (based on bluefin-dx-nvidia)
+[group('Build Image')]
+build-nvidia $tag=default_tag:
+    just build "hyprblue-nvidia" "{{ tag }}" "ghcr.io/ublue-os/bluefin-dx-nvidia:latest"
+
+# Build the HyprBlue open video drivers variant (based on bluefin-dx)
+[group('Build Image')]
+build-open-video $tag=default_tag:
+    just build "hyprblue-open-video" "{{ tag }}" "ghcr.io/ublue-os/bluefin-dx:latest"
+
+# Build the HyprBazzite NVIDIA variant (based on bazzite-nvidia)
+[group('Build Image')]
+build-bazzite-nvidia $tag=default_tag:
+    just build "hyprbazzite-nvidia" "{{ tag }}" "ghcr.io/ublue-os/bazzite-nvidia:latest"
+
+# Build the HyprBazzite open video drivers variant (based on bazzite)
+[group('Build Image')]
+build-bazzite-open-video $tag=default_tag:
+    just build "hyprbazzite-open-video" "{{ tag }}" "ghcr.io/ublue-os/bazzite:latest"
+
+# Build all HyprBlue variants (nvidia + open-video)
+[group('Build Image')]
+build-all-hyprblue $tag=default_tag:
+    just build-nvidia "{{ tag }}"
+    just build-open-video "{{ tag }}"
+
+# Build all HyprBazzite variants (nvidia + open-video)
+[group('Build Image')]
+build-all-bazzite $tag=default_tag:
+    just build-bazzite-nvidia "{{ tag }}"
+    just build-bazzite-open-video "{{ tag }}"
+
+# Build all variants (HyprBlue + HyprBazzite, both nvidia and open-video)
+[group('Build Image')]
+build-all $tag=default_tag:
+    just build-all-hyprblue "{{ tag }}"
+    just build-all-bazzite "{{ tag }}"
 
 # Check Just Syntax
 [group('Just')]
@@ -87,13 +126,14 @@ sudoif command *args:
 #
 
 # Build the image using the specified parameters
-build $target_image=image_name $tag=default_tag:
+build $target_image=image_name $tag=default_tag $base_image=base_image:
     #!/usr/bin/env bash
 
     BUILD_ARGS=()
     if [[ -z "$(git status -s)" ]]; then
         BUILD_ARGS+=("--build-arg" "SHA_HEAD_SHORT=$(git rev-parse --short HEAD)")
     fi
+    BUILD_ARGS+=("--build-arg" "BASE_IMAGE=${base_image}")
 
     podman build \
         "${BUILD_ARGS[@]}" \
@@ -208,7 +248,15 @@ build-raw $target_image=("localhost/" + image_name) $tag=default_tag: && (_build
 
 # Build an ISO virtual machine image
 [group('Build Virtal Machine Image')]
-build-iso $target_image=("localhost/" + image_name) $tag=default_tag: && (_build-bib target_image tag "iso" "disk_config/iso-gnome.toml")
+build-iso $target_image=("localhost/" + image_name) $tag=default_tag:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # Detect if this is a bazzite variant (uses KDE) or bluefin variant (uses GNOME)
+    if [[ "{{ target_image }}" == *"bazzite"* ]]; then
+        just _build-bib "{{ target_image }}" "{{ tag }}" "iso" "disk_config/iso-kde.toml"
+    else
+        just _build-bib "{{ target_image }}" "{{ tag }}" "iso" "disk_config/iso-gnome.toml"
+    fi
 
 # Rebuild a QCOW2 virtual machine image
 [group('Build Virtal Machine Image')]
@@ -220,7 +268,15 @@ rebuild-raw $target_image=("localhost/" + image_name) $tag=default_tag: && (_reb
 
 # Rebuild an ISO virtual machine image
 [group('Build Virtal Machine Image')]
-rebuild-iso $target_image=("localhost/" + image_name) $tag=default_tag: && (_rebuild-bib target_image tag "iso" "disk_config/iso.toml")
+rebuild-iso $target_image=("localhost/" + image_name) $tag=default_tag:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # Detect if this is a bazzite variant (uses KDE) or bluefin variant (uses GNOME)
+    if [[ "{{ target_image }}" == *"bazzite"* ]]; then
+        just _rebuild-bib "{{ target_image }}" "{{ tag }}" "iso" "disk_config/iso-kde.toml"
+    else
+        just _rebuild-bib "{{ target_image }}" "{{ tag }}" "iso" "disk_config/iso-gnome.toml"
+    fi
 
 # Run a virtual machine with the specified image type and configuration
 _run-vm $target_image $tag $type $config:

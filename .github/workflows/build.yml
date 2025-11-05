@@ -22,13 +22,33 @@ env:
   DEFAULT_TAG: "latest"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}-${{ inputs.brand_name}}-${{ inputs.stream_name }}
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}-${{ matrix.image_name }}
   cancel-in-progress: true
 
 jobs:
   build_push:
     name: Build and push image
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image_name: "hyprblue-nvidia"
+            image_alias: "hyprblue"
+            base_image: "ghcr.io/ublue-os/bluefin-dx-nvidia:latest"
+            image_desc: "HyprBlue Custom Image with NVIDIA support, based on bluefin-dx-nvidia"
+          - image_name: "hyprblue-open-video"
+            image_alias: ""
+            base_image: "ghcr.io/ublue-os/bluefin-dx:latest"
+            image_desc: "HyprBlue Custom Image with open video drivers, based on bluefin-dx"
+          - image_name: "hyprbazzite-nvidia"
+            image_alias: ""
+            base_image: "ghcr.io/ublue-os/bazzite-nvidia:latest"
+            image_desc: "HyprBazzite Custom Image with NVIDIA support, based on bazzite-nvidia"
+          - image_name: "hyprbazzite-open-video"
+            image_alias: ""
+            base_image: "ghcr.io/ublue-os/bazzite:latest"
+            image_desc: "HyprBazzite Custom Image with open video drivers, based on bazzite"
 
     permissions:
       contents: read
@@ -40,7 +60,12 @@ jobs:
         run: |
           # Lowercase the image uri
           echo "IMAGE_REGISTRY=${IMAGE_REGISTRY,,}" >> ${GITHUB_ENV}
-          echo "IMAGE_NAME=${IMAGE_NAME,,}" >> ${GITHUB_ENV}
+          echo "IMAGE_NAME=${{ matrix.image_name }}" >> ${GITHUB_ENV}
+          echo "IMAGE_DESC=${{ matrix.image_desc }}" >> ${GITHUB_ENV}
+          # Set alias if specified (for backwards compatibility)
+          if [ -n "${{ matrix.image_alias }}" ]; then
+            echo "IMAGE_ALIAS=${{ matrix.image_alias }}" >> ${GITHUB_ENV}
+          fi
 
       # These stage versions are pinned by https://github.com/renovatebot/renovate
       - name: Checkout
@@ -116,6 +141,8 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
+          build-args: |
+            BASE_IMAGE=${{ matrix.base_image }}
           oci: false
 
       # Rechunk is a script that we use on Universal Blue to make sure there isnt a single huge layer when your image gets published.
@@ -166,6 +193,21 @@ jobs:
           username: ${{ env.REGISTRY_USER }}
           password: ${{ env.REGISTRY_PASSWORD }}
 
+      # Push alias for backwards compatibility (hyprblue points to hyprblue-nvidia)
+      - name: Push Alias To GHCR
+        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2
+        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && env.IMAGE_ALIAS != ''
+        id: push_alias
+        env:
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_PASSWORD: ${{ github.token }}
+        with:
+          registry: ${{ env.IMAGE_REGISTRY }}
+          image: ${{ env.IMAGE_ALIAS }}
+          tags: ${{ steps.metadata.outputs.tags }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+
       # This section is optional and only needs to be enabled if you plan on distributing
       # your project for others to consume. You will need to create a public and private key
       # using Cosign and save the private key as a repository secret in Github for this workflow
@@ -181,6 +223,14 @@ jobs:
           for tag in ${{ steps.metadata.outputs.tags }}; do
             cosign sign -y --key env://COSIGN_PRIVATE_KEY $IMAGE_FULL:$tag
           done
+
+          # Also sign alias if it exists
+          if [ -n "${{ env.IMAGE_ALIAS }}" ]; then
+            IMAGE_ALIAS_FULL="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_ALIAS }}"
+            for tag in ${{ steps.metadata.outputs.tags }}; do
+              cosign sign -y --key env://COSIGN_PRIVATE_KEY $IMAGE_ALIAS_FULL:$tag
+            done
+          fi
         env:
           TAGS: ${{ steps.push.outputs.digest }}
           COSIGN_EXPERIMENTAL: false

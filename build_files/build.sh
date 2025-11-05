@@ -18,10 +18,9 @@ USE_SDDM=FALSE
 
 log "Enable Copr repos..."
 COPR_REPOS=(
-	enmanuelmoreira/mapanare-labs     # for windsurf
 	erikreider/SwayNotificationCenter # for swaync
 	errornointernet/packages
-	heus-sueh/packages # for matugen/swww, needed by hyprpanel
+	heus-sueh/packages                # for matugen/swww, needed by hyprpanel
 	leloubil/wl-clip-persist
 	# pgdev/ghostty
 	solopasha/hyprland
@@ -30,7 +29,10 @@ COPR_REPOS=(
 	yalter/niri
 )
 for repo in "${COPR_REPOS[@]}"; do
-	dnf5 -y copr enable "$repo"
+	# Try to enable the repo, but don't fail the build if it doesn't support this Fedora version
+	if ! dnf5 -y copr enable "$repo" 2>&1; then
+		log "Warning: Failed to enable COPR repo $repo (may not support Fedora $RELEASE)"
+	fi
 done
 
 # log "Enable terra repositories..."
@@ -133,12 +135,20 @@ HYPR_PKGS=(
 	hyprlock
 	hyprshot
 	xdg-desktop-portal-hyprland
-	hyprsysteminfo
 	hyprsunset
-	hyprpolkitagent
-	hyprland-qt-support
 	hyprutils
 )
+
+# Detect if we're on Bazzite (has KDE/Qt 6.10) or Bluefin (has GNOME/Qt 6.9)
+# These Qt-dependent packages only work on Bluefin currently due to Qt version mismatch
+if ! grep -qi "bazzite" /usr/lib/os-release 2>/dev/null; then
+	# Only add Qt-dependent packages on Bluefin
+	HYPR_PKGS+=(
+		hyprsysteminfo
+		hyprpolkitagent
+		hyprland-qt-support
+	)
+fi
 
 # Niri and its dependencies from its default config.
 # commented out packages are already referenced in this file, OR they

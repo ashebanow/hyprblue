@@ -1,9 +1,12 @@
+# Base Image - ARG must come before any FROM that uses it
+ARG BASE_IMAGE=ghcr.io/ublue-os/bluefin-dx-nvidia:latest
+
 # Allow build scripts to be referenced without being copied into the final image
 FROM scratch AS ctx
 COPY build_files /
 
-# Base Image
-FROM ghcr.io/ublue-os/bluefin-dx-nvidia:latest
+# Main image
+FROM ${BASE_IMAGE}
 
 ## Other possible base images include:
 # FROM ghcr.io/ublue-os/bazzite:latest

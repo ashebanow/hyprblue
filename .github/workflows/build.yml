@@ -192,7 +192,14 @@ jobs:
           username: ${{ env.REGISTRY_USER }}
           password: ${{ env.REGISTRY_PASSWORD }}
 
-      # Push alias for backwards compatibility (hyprblue points to hyprblue-nvidia)
+      # Tag and push alias for backwards compatibility (hyprblue points to hyprblue-nvidia)
+      - name: Tag Image with Alias
+        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && env.IMAGE_ALIAS != ''
+        run: |
+          for tag in ${{ steps.metadata.outputs.tags }}; do
+            podman tag ${{ env.IMAGE_NAME }}:$tag ${{ env.IMAGE_ALIAS }}:$tag
+          done
+
       - name: Push Alias To GHCR
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2
         if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && env.IMAGE_ALIAS != ''

@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_DESC: "HyprBlue Custom Image, based on bluefin-dx-nvidia"
+  IMAGE_DESC: "HyprBlue Custom Image, based on bluefin-dx"
   IMAGE_KEYWORDS: "bootc,ublue,universal-blue"
   IMAGE_LOGO_URL: "https://avatars.githubusercontent.com/u/120078124?s=200&v=4" # Put your own image here for a fancy profile on https://artifacthub.io/!
   IMAGE_NAME: "${{ github.event.repository.name }}" # output image name, usually same as repo name
@@ -32,18 +32,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image_name: "hyprblue-nvidia"
-            image_alias: "hyprblue"
-            base_image: "ghcr.io/ublue-os/bluefin-dx-nvidia:latest"
-            image_desc: "HyprBlue Custom Image with NVIDIA support, based on bluefin-dx-nvidia"
           - image_name: "hyprblue-open-video"
-            image_alias: ""
+            image_alias: "hyprblue"
             base_image: "ghcr.io/ublue-os/bluefin-dx:latest"
             image_desc: "HyprBlue Custom Image with open video drivers, based on bluefin-dx"
-          - image_name: "hyprbazzite-nvidia"
-            image_alias: ""
-            base_image: "ghcr.io/ublue-os/bazzite-nvidia:latest"
-            image_desc: "HyprBazzite Custom Image with NVIDIA support, based on bazzite-nvidia"
           - image_name: "hyprbazzite-open-video"
             image_alias: ""
             base_image: "ghcr.io/ublue-os/bazzite:latest"
@@ -192,7 +184,7 @@ jobs:
           username: ${{ env.REGISTRY_USER }}
           password: ${{ env.REGISTRY_PASSWORD }}
 
-      # Tag and push alias for backwards compatibility (hyprblue points to hyprblue-nvidia)
+      # Tag and push alias for backwards compatibility (hyprblue points to hyprblue-open-video)
       - name: Tag Image with Alias
         if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && env.IMAGE_ALIAS != ''
         run: |

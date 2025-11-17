@@ -1,7 +1,7 @@
 export repo_organization := env("GITHUB_REPOSITORY_OWNER", "ashebanow")
-export image_name := env("IMAGE_NAME", "hyprblue-nvidia")
+export image_name := env("IMAGE_NAME", "hyprblue-open-video")
 export default_tag := env("DEFAULT_TAG", "latest")
-export base_image := env("BASE_IMAGE", "ghcr.io/ublue-os/bluefin-dx-nvidia:latest")
+export base_image := env("BASE_IMAGE", "ghcr.io/ublue-os/bluefin-dx:latest")
 export bib_image := env("BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest")
 
 alias build-vm := build-qcow2
@@ -12,39 +12,27 @@ alias run-vm := run-vm-qcow2
 default:
     @just --list
 
-# Build the HyprBlue NVIDIA variant (based on bluefin-dx-nvidia)
-[group('Build Image')]
-build-nvidia $tag=default_tag:
-    just build "hyprblue-nvidia" "{{ tag }}" "ghcr.io/ublue-os/bluefin-dx-nvidia:latest"
-
 # Build the HyprBlue open video drivers variant (based on bluefin-dx)
 [group('Build Image')]
 build-open-video $tag=default_tag:
     just build "hyprblue-open-video" "{{ tag }}" "ghcr.io/ublue-os/bluefin-dx:latest"
-
-# Build the HyprBazzite NVIDIA variant (based on bazzite-nvidia)
-[group('Build Image')]
-build-bazzite-nvidia $tag=default_tag:
-    just build "hyprbazzite-nvidia" "{{ tag }}" "ghcr.io/ublue-os/bazzite-nvidia:latest"
 
 # Build the HyprBazzite open video drivers variant (based on bazzite)
 [group('Build Image')]
 build-bazzite-open-video $tag=default_tag:
     just build "hyprbazzite-open-video" "{{ tag }}" "ghcr.io/ublue-os/bazzite:latest"
 
-# Build all HyprBlue variants (nvidia + open-video)
+# Build all HyprBlue variants
 [group('Build Image')]
 build-all-hyprblue $tag=default_tag:
-    just build-nvidia "{{ tag }}"
     just build-open-video "{{ tag }}"
 
-# Build all HyprBazzite variants (nvidia + open-video)
+# Build all HyprBazzite variants
 [group('Build Image')]
 build-all-bazzite $tag=default_tag:
-    just build-bazzite-nvidia "{{ tag }}"
     just build-bazzite-open-video "{{ tag }}"
 
-# Build all variants (HyprBlue + HyprBazzite, both nvidia and open-video)
+# Build all variants (HyprBlue + HyprBazzite)
 [group('Build Image')]
 build-all $tag=default_tag:
     just build-all-hyprblue "{{ tag }}"

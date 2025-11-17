@@ -9,12 +9,10 @@ Custom bootc images based on [Universal Blue](https://universal-blue.org/) that 
 All images are available at `ghcr.io/ashebanow/`:
 
 ### HyprBlue (Based on Bluefin)
-- **`hyprblue-nvidia`** - NVIDIA GPU support (based on `bluefin-dx-nvidia:latest`)
 - **`hyprblue-open-video`** - Open source video drivers (based on `bluefin-dx:latest`)
-- **`hyprblue`** - Alias for `hyprblue-nvidia` (for backwards compatibility)
+- **`hyprblue`** - Alias for `hyprblue-open-video` (for backwards compatibility)
 
 ### HyprBazzite (Based on Bazzite)
-- **`hyprbazzite-nvidia`** - NVIDIA GPU support (based on `bazzite-nvidia:latest`)
 - **`hyprbazzite-open-video`** - Open source video drivers (based on `bazzite:latest`)
 
 ## Important Notes
@@ -43,8 +41,8 @@ These packages will be added back when the COPR maintainer rebuilds them against
 ### 1. Install Base System
 
 Install either Bluefin or Bazzite from ISO:
-- For HyprBlue: Install bluefin-dx or bluefin-dx-nvidia
-- For HyprBazzite: Install bazzite or bazzite-nvidia
+- For HyprBlue: Install bluefin-dx
+- For HyprBazzite: Install bazzite
 
 Set up LUKS/TPM/Secure Boot as needed during installation.
 
@@ -53,19 +51,13 @@ Set up LUKS/TPM/Secure Boot as needed during installation.
 Choose the appropriate variant for your system:
 
 ```bash
-# For NVIDIA systems (HyprBlue):
-sudo bootc switch ghcr.io/ashebanow/hyprblue-nvidia
-
-# For non-NVIDIA systems (HyprBlue):
+# HyprBlue (Bluefin-based):
 sudo bootc switch ghcr.io/ashebanow/hyprblue-open-video
 
-# For NVIDIA systems (HyprBazzite):
-sudo bootc switch ghcr.io/ashebanow/hyprbazzite-nvidia
-
-# For non-NVIDIA systems (HyprBazzite):
+# HyprBazzite (Bazzite-based):
 sudo bootc switch ghcr.io/ashebanow/hyprbazzite-open-video
 
-# Legacy alias (points to hyprblue-nvidia):
+# Alias (points to hyprblue-open-video):
 sudo bootc switch ghcr.io/ashebanow/hyprblue
 ```
 

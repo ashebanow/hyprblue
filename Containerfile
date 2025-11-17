@@ -1,5 +1,5 @@
 # Base Image - ARG must come before any FROM that uses it
-ARG BASE_IMAGE=ghcr.io/ublue-os/bluefin-dx-nvidia:latest
+ARG BASE_IMAGE=ghcr.io/ublue-os/bluefin-dx:latest
 
 # Allow build scripts to be referenced without being copied into the final image
 FROM scratch AS ctx

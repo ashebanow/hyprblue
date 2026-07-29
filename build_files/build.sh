@@ -23,7 +23,7 @@ COPR_REPOS=(
 	heus-sueh/packages                # for matugen/swww, needed by hyprpanel
 	leloubil/wl-clip-persist
 	# pgdev/ghostty
-	solopasha/hyprland
+	lionheartp/Hyprland # fix issue on fedora 44 -> https://github.com/solopasha/hyprlandRPM/issues/49
 	tofik/sway
 	ulysg/xwayland-satellite
 	yalter/niri

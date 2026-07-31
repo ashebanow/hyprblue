@@ -200,7 +200,7 @@ ADDITIONAL_SYSTEM_APPS=(
 # we do all package installs in one rpm-ostree command
 # so that we create minimal layers in the final image
 log "Installing packages using dnf5..."
-dnf5 install --setopt=install_weak_deps=False -y \
+dnf5 install --setopt=install_weak_deps=False --skip-unavailable -y \
 	"${FONTS[@]}" \
 	"${HYPR_DEPS[@]}" \
 	"${HYPR_PKGS[@]}" \

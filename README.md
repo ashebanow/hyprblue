@@ -14,6 +14,7 @@ All images are available at `ghcr.io/ashebanow/`:
 
 ### HyprBazzite (Based on Bazzite)
 - **`hyprbazzite-open-video`** - Open source video drivers (based on `bazzite:latest`)
+- **`hyprbazzite-nvidia-open`** - NVIDIA open kernel modules (based on `bazzite-nvidia-open:latest`)
 
 ## Important Notes
 
@@ -42,7 +43,8 @@ These packages will be added back when the COPR maintainer rebuilds them against
 
 Install either Bluefin or Bazzite from ISO:
 - For HyprBlue: Install bluefin-dx
-- For HyprBazzite: Install bazzite
+- For HyprBazzite (open video): Install bazzite
+- For HyprBazzite (NVIDIA): Install bazzite-nvidia-open
 
 Set up LUKS/TPM/Secure Boot as needed during installation.
 
@@ -54,8 +56,11 @@ Choose the appropriate variant for your system:
 # HyprBlue (Bluefin-based):
 sudo bootc switch ghcr.io/ashebanow/hyprblue-open-video
 
-# HyprBazzite (Bazzite-based):
+# HyprBazzite (Bazzite-based, open video drivers):
 sudo bootc switch ghcr.io/ashebanow/hyprbazzite-open-video
+
+# HyprBazzite (Bazzite-based, NVIDIA open drivers):
+sudo bootc switch ghcr.io/ashebanow/hyprbazzite-nvidia-open
 
 # Alias (points to hyprblue-open-video):
 sudo bootc switch ghcr.io/ashebanow/hyprblue

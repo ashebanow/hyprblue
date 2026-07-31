@@ -22,15 +22,21 @@ build-open-video $tag=default_tag:
 build-bazzite-open-video $tag=default_tag:
     just build "hyprbazzite-open-video" "{{ tag }}" "ghcr.io/ublue-os/bazzite:latest"
 
+# Build the HyprBazzite NVIDIA open drivers variant (based on bazzite-nvidia-open)
+[group('Build Image')]
+build-bazzite-nvidia-open $tag=default_tag:
+    just build "hyprbazzite-nvidia-open" "{{ tag }}" "ghcr.io/ublue-os/bazzite-nvidia-open:latest"
+
 # Build all HyprBlue variants
 [group('Build Image')]
 build-all-hyprblue $tag=default_tag:
     just build-open-video "{{ tag }}"
 
-# Build all HyprBazzite variants
+# Build all HyprBazzite variants (open-video + nvidia-open)
 [group('Build Image')]
 build-all-bazzite $tag=default_tag:
     just build-bazzite-open-video "{{ tag }}"
+    just build-bazzite-nvidia-open "{{ tag }}"
 
 # Build all variants (HyprBlue + HyprBazzite)
 [group('Build Image')]

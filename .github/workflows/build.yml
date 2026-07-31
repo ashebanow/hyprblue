@@ -40,6 +40,10 @@ jobs:
             image_alias: ""
             base_image: "ghcr.io/ublue-os/bazzite:latest"
             image_desc: "HyprBazzite Custom Image with open video drivers, based on bazzite"
+          - image_name: "hyprbazzite-nvidia-open"
+            image_alias: ""
+            base_image: "ghcr.io/ublue-os/bazzite-nvidia-open:latest"
+            image_desc: "HyprBazzite Custom Image with NVIDIA open drivers, based on bazzite-nvidia-open"
 
     permissions:
       contents: read

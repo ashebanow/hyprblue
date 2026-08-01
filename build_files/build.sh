@@ -2,7 +2,7 @@
 
 set -ouex pipefail
 
-# RELEASE="$(rpm -E %fedora)"
+RELEASE="$(rpm -E %fedora)"
 
 log() {
 	echo "=== $* ==="
@@ -16,17 +16,27 @@ USE_SDDM=FALSE
 # Setup Repositories
 #######################################################################
 
+# Preference order: official Fedora repos > upstream-blessed COPR > other COPRs.
+#
+# These used to be COPR-only and are now in Fedora $RELEASE proper, so their
+# COPRs were dropped:
+#
+#   SwayNotificationCenter -> fedora updates (was erikreider/SwayNotificationCenter)
+#   niri                   -> fedora updates (was yalter/niri)
+#   xwayland-satellite     -> fedora        (was ulysg/xwayland-satellite)
+#   swaylock/wlogout/swappy/waybar/cava -> fedora (was tofik/sway)
+#   matugen                -> lionheartp   (was heus-sueh/packages, 2.4.1 vs 4.1.0)
+#   swww                   -> lionheartp's awww fork (see HYPR_DEPS below)
+#
+# heus-sueh/packages and tofik/sway contributed exactly zero packages to the
+# last build, so they are gone too.
 log "Enable Copr repos..."
 COPR_REPOS=(
-	erikreider/SwayNotificationCenter # for swaync
-	errornointernet/packages
-	heus-sueh/packages                # for matugen/swww, needed by hyprpanel
-	leloubil/wl-clip-persist
-	# pgdev/ghostty
-	lionheartp/Hyprland # fix issue on fedora 44 -> https://github.com/solopasha/hyprlandRPM/issues/49
-	tofik/sway
-	ulysg/xwayland-satellite
-	yalter/niri
+	errornointernet/packages # wallust
+	leloubil/wl-clip-persist # not packaged anywhere else
+	lionheartp/Hyprland      # Hyprland stack; fixes https://github.com/solopasha/hyprlandRPM/issues/49
+	scottames/ghostty        # the COPR ghostty.org recommends
+	solopasha/hyprland       # ONLY for hyprpanel/ags, see the restriction below
 )
 for repo in "${COPR_REPOS[@]}"; do
 	# Try to enable the repo, but don't fail the build if it doesn't support this Fedora version
@@ -34,6 +44,25 @@ for repo in "${COPR_REPOS[@]}"; do
 		log "Warning: Failed to enable COPR repo $repo (may not support Fedora $RELEASE)"
 	fi
 done
+
+# hyprpanel and aylurs-gtk-shell2 exist only in solopasha/hyprland, but that
+# repo also ships a full (Fedora 44-broken) Hyprland stack that would outrank
+# lionheartp's. So allow only the hyprpanel/ags/astal packages from it.
+# appmenu-glib-translator is in the list because astal-libs needs it and it,
+# too, is solopasha-only.
+log "Restricting solopasha/hyprland to the hyprpanel/ags stack..."
+SOLOPASHA_REPO="copr:copr.fedorainfracloud.org:solopasha:hyprland"
+SOLOPASHA_PKGS="hyprpanel,aylurs-gtk-shell2,astal,astal-gjs,astal-io,astal-libs,astal-gtk4,appmenu-glib-translator"
+if dnf5 repo list --all 2>/dev/null | grep -q "^${SOLOPASHA_REPO}"; then
+	# an unrestricted solopasha would shadow lionheartp's Hyprland, so a failure
+	# here has to be fatal rather than merely noisy
+	if ! dnf5 config-manager setopt "${SOLOPASHA_REPO}.includepkgs=${SOLOPASHA_PKGS}"; then
+		log "ERROR: could not restrict ${SOLOPASHA_REPO}; refusing to build"
+		exit 1
+	fi
+else
+	log "Warning: ${SOLOPASHA_REPO} is not enabled; hyprpanel will be missing"
+fi
 
 # log "Enable terra repositories..."
 # Bazzite disabled this for some reason so lets re-enable it again
@@ -107,7 +136,7 @@ HYPR_DEPS=(
 	slurp
 	swappy
 	swaync
-	swww
+	awww # swww fork from lionheartp; the real swww is unbuilt on f44
 	tumbler
 	upower
 	wallust
@@ -186,13 +215,14 @@ fi
 ADDITIONAL_SYSTEM_APPS=(
 	alacritty
 
-	# ghostty is broken in Fedora 42 right now
-	# ghostty
+	# ghostty still isn't in Fedora, but scottames/ghostty (which ghostty.org
+	# points at) has current builds, so it's back.
+	ghostty
 
 	kitty
 	kitty-terminfo
 
-	thunar
+	Thunar # yes, Fedora really capitalizes this one
 	thunar-volman
 	thunar-archive-plugin
 )
@@ -209,11 +239,42 @@ dnf5 install --setopt=install_weak_deps=False --skip-unavailable -y \
 	"${ADDITIONAL_SYSTEM_APPS[@]}"
 
 #######################################################################
+### Sanity check
+###
+### --skip-unavailable means a renamed or dropped package silently vanishes
+### instead of failing the build. That is exactly how hyprpanel and
+### aylurs-gtk-shell2 went missing from every variant for a while, so assert
+### the things this image exists for actually landed.
+
+log "Verifying critical packages..."
+CRITICAL_PKGS=(
+	aylurs-gtk-shell2
+	ghostty
+	hyprland
+	hyprpanel
+	niri
+	waybar
+	xwayland-satellite
+)
+MISSING_PKGS=()
+for pkg in "${CRITICAL_PKGS[@]}"; do
+	rpm -q "$pkg" >/dev/null 2>&1 || MISSING_PKGS+=("$pkg")
+done
+if [[ ${#MISSING_PKGS[@]} -gt 0 ]]; then
+	log "ERROR: critical packages missing from image: ${MISSING_PKGS[*]}"
+	exit 1
+fi
+
+#######################################################################
 ### Disable repositeories so they aren't cluttering up the final image
 
 log "Disable Copr repos to get rid of clutter..."
 for repo in "${COPR_REPOS[@]}"; do
-	dnf5 -y copr disable "$repo"
+	# a repo that failed to enable above can't be disabled, so don't let that
+	# take down the whole build
+	if ! dnf5 -y copr disable "$repo" 2>&1; then
+		log "Warning: Failed to disable COPR repo $repo"
+	fi
 done
 
 #######################################################################

@@ -37,6 +37,39 @@ Alternatively, install `polkit-gnome` and configure it to autostart.
 
 These packages will be added back when the COPR maintainer rebuilds them against Qt 6.10.
 
+## Installer ISOs
+
+Built on demand with the "Build disk images" workflow (pick a `variant`), or
+locally with `just`:
+
+| variant | ISO built from | installed system tracks | config |
+|---|---|---|---|
+| `hyprblue` | `hyprblue-open-video` | `hyprblue-open-video` | `disk_config/iso-gnome.toml` |
+| `hyprbazzite` | `hyprbazzite-open-video` | `hyprbazzite-open-video` | `disk_config/iso-kde.toml` |
+| `hyprbazzite-nvidia` | `hyprbazzite-open-video` | `hyprbazzite-nvidia-open` | `disk_config/iso-nvidia.toml` |
+
+```bash
+just build-iso localhost/hyprblue-open-video
+just build-iso localhost/hyprbazzite-open-video
+just build-iso-nvidia
+```
+
+**The NVIDIA ISO is built from the open-video image on purpose.** The kickstart's
+`bootc switch --mutate-in-place` only rewrites the deployment's origin, it does
+not fetch anything, so:
+
+1. installation and first boot run the open-video image (nouveau/amdgpu) — the
+   machine works, it just doesn't have the NVIDIA driver yet;
+2. the first `bootc upgrade` pulls `hyprbazzite-nvidia-open`. Universal Blue
+   images run that automatically, so this usually happens on its own; force it
+   with `sudo bootc upgrade`;
+3. after the next reboot you're on the NVIDIA image, with its kargs (modeset,
+   nouveau blacklist) applied from the image's own `/usr/lib/bootc/kargs.d`.
+
+If you'd rather have the driver working at first boot, build an ISO directly
+from `hyprbazzite-nvidia-open` instead — it costs a second multi-gigabyte ISO to
+build and host.
+
 ## How to Use
 
 ### 1. Install Base System

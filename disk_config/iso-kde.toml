@@ -1,7 +1,9 @@
+# ISO config for the *bazzite* (KDE-based) variant.
+# Build this against ghcr.io/ashebanow/hyprbazzite-open-video.
 [customizations.installer.kickstart]
 contents = """
 %post
-bootc switch --mutate-in-place --transport registry ghcr.io/ashebanow/hyprblue:latest
+bootc switch --mutate-in-place --transport registry ghcr.io/ashebanow/hyprbazzite-open-video:latest
 %end
 """
 

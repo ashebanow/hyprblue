@@ -1,0 +1,42 @@
+# ISO config for the NVIDIA variant.
+#
+# Build this against ghcr.io/ashebanow/hyprbazzite-open-video (NOT the nvidia
+# image): the installer payload is the open-video image, and the kickstart
+# repoints the installed system at hyprbazzite-nvidia-open.
+#
+# What that means in practice:
+#   - installation and *first boot* run the open-video image, i.e. nouveau /
+#     amdgpu. The machine is usable, just without the NVIDIA driver.
+#   - `bootc switch --mutate-in-place` only rewrites the deployment's origin,
+#     it does not fetch anything, so the NVIDIA image arrives on the first
+#     `bootc upgrade` (ublue images run that automatically via uupd/the bootc
+#     update timer) and takes effect on the next reboot.
+#   - the NVIDIA kargs (modeset, nouveau blacklist) ship inside
+#     bazzite-nvidia-open as /usr/lib/bootc/kargs.d, so they get applied as
+#     part of that upgrade. No manual karg editing needed.
+#
+# The alternative is a dedicated ISO built from hyprbazzite-nvidia-open
+# itself, which gives a working driver at first boot at the cost of building
+# and hosting a second multi-gigabyte ISO. Switch to that by building this
+# same file's image ref against the nvidia image instead.
+[customizations.installer.kickstart]
+contents = """
+%post
+bootc switch --mutate-in-place --transport registry ghcr.io/ashebanow/hyprbazzite-nvidia-open:latest
+%end
+"""
+
+[customizations.installer.modules]
+enable = [
+  "org.fedoraproject.Anaconda.Modules.Storage",
+  "org.fedoraproject.Anaconda.Modules.Runtime",
+  "org.fedoraproject.Anaconda.Modules.Network",
+  "org.fedoraproject.Anaconda.Modules.Security",
+  "org.fedoraproject.Anaconda.Modules.Services",
+  "org.fedoraproject.Anaconda.Modules.Users",
+  "org.fedoraproject.Anaconda.Modules.Timezone"
+]
+
+disable = [
+  "org.fedoraproject.Anaconda.Modules.Subscription",
+]

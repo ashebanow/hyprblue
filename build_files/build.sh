@@ -36,7 +36,6 @@ COPR_REPOS=(
 	leloubil/wl-clip-persist # not packaged anywhere else
 	lionheartp/Hyprland      # Hyprland stack; fixes https://github.com/solopasha/hyprlandRPM/issues/49
 	scottames/ghostty        # the COPR ghostty.org recommends
-	solopasha/hyprland       # ONLY for hyprpanel/ags, see the restriction below
 )
 for repo in "${COPR_REPOS[@]}"; do
 	# Try to enable the repo, but don't fail the build if it doesn't support this Fedora version
@@ -45,47 +44,11 @@ for repo in "${COPR_REPOS[@]}"; do
 	fi
 done
 
-# hyprpanel and aylurs-gtk-shell2 exist only in solopasha/hyprland, but that
-# repo also ships a full (Fedora 44-broken) Hyprland stack that would outrank
-# lionheartp's. So allow only the hyprpanel/ags/astal packages from it.
-# appmenu-glib-translator is in the list because astal-libs needs it and it,
-# too, is solopasha-only.
-#
-# solopasha/hyprland publishes NO fedora-44 chroot (only fedora-rawhide, whose
-# rpms are fc43 builds). `dnf5 copr enable` therefore fails with "Chroot not
-# found in the given Copr project (fedora-44-x86_64)". That is expected on
-# Fedora $RELEASE and is not fatal: hyprpanel/aylurs-gtk-shell2 simply cannot
-# be installed, and the critical-package check below is told to expect their
-# absence. Do not force these in from rawhide -- they are Qt 6.9 builds and
-# would reintroduce the Qt 6.10 conflict documented in the README.
-log "Restricting solopasha/hyprland to the hyprpanel/ags stack..."
-SOLOPASHA_REPO="copr:copr.fedorainfracloud.org:solopasha:hyprland"
-SOLOPASHA_UNAVAILABLE=FALSE
-SOLOPASHA_PKGS="hyprpanel,aylurs-gtk-shell2,astal,astal-gjs,astal-io,astal-libs,astal-gtk4,appmenu-glib-translator"
-# Repo ids are printed with the "copr:" prefix by `dnf5 repo list`, but the
-# spelling has varied across dnf5 versions, so match on the distinctive tail and
-# use whatever id dnf5 actually reports. `|| true` is required: this script runs
-# under `set -o pipefail`, and a grep with no match inside a command
-# substitution would otherwise abort the build here instead of reaching the
-# "no chroot for this release" branch below.
-SOLOPASHA_REPO_ID="$( { dnf5 repo list --all 2>/dev/null || true; } \
-	| { grep -oE '[^[:space:]]*copr[^[:space:]]*solopasha[^[:space:]]*' || true; } \
-	| { sed 's/\.repo$//' | head -n1; } )"
-if [[ -n "$SOLOPASHA_REPO_ID" ]]; then
-	log "Found solopasha repo id: ${SOLOPASHA_REPO_ID}"
-	# an unrestricted solopasha would shadow lionheartp's Hyprland, so a failure
-	# here has to be fatal rather than merely noisy
-	if ! dnf5 config-manager setopt "${SOLOPASHA_REPO_ID}.includepkgs=${SOLOPASHA_PKGS}"; then
-		log "ERROR: could not restrict ${SOLOPASHA_REPO_ID}; refusing to build"
-		exit 1
-	fi
-else
-	# No solopasha chroot for this Fedora release. This is the expected state on
-	# Fedora 44, so downgrade the packages that live only there instead of
-	# failing the build, and let the sanity check below verify the rest.
-	log "Note: ${SOLOPASHA_REPO} has no Fedora ${RELEASE} chroot; dropping hyprpanel/aylurs-gtk-shell2"
-	SOLOPASHA_UNAVAILABLE=TRUE
-fi
+# solopasha/hyprland is deliberately absent: it was pulled in only for
+# hyprpanel/aylurs-gtk-shell2, and it publishes no fedora-44 chroot (only
+# fedora-rawhide, whose rpms are fc43 builds). hyprpanel has been dropped from
+# this image, so the repo, its includepkgs restriction and the critical-package
+# exemption that went with it are all gone.
 
 #######################################################################
 ## Install Packages
@@ -114,7 +77,6 @@ FONTS=(
 # from ml4w and other sources.
 HYPR_DEPS=(
 	aquamarine
-	aylurs-gtk-shell2
 	blueman
 	bluez
 	bluez-tools
@@ -129,7 +91,6 @@ HYPR_DEPS=(
 	grim
 	grimblast
 	gvfs
-	hyprpanel
 	inxi
 	kvantum
 	# lib32-nvidia-utils
@@ -279,13 +240,8 @@ dnf5 install --setopt=install_weak_deps=False --skip-unavailable -y \
 ### Sanity check
 ###
 ### --skip-unavailable means a renamed or dropped package silently vanishes
-### instead of failing the build. That is exactly how hyprpanel and
-### aylurs-gtk-shell2 went missing from every variant for a while, so assert
-### the things this image exists for actually landed.
-###
-### hyprpanel/aylurs-gtk-shell2 are exempt when solopasha has no chroot for
-### this Fedora release, since then they are genuinely unobtainable and their
-### absence is already logged above rather than silently swallowed.
+### instead of failing the build. Assert the things this image exists for
+### actually landed.
 
 log "Verifying critical packages..."
 CRITICAL_PKGS=(
@@ -295,9 +251,6 @@ CRITICAL_PKGS=(
 	waybar
 	xwayland-satellite
 )
-if [[ "${SOLOPASHA_UNAVAILABLE:-FALSE}" != TRUE ]]; then
-	CRITICAL_PKGS+=(aylurs-gtk-shell2 hyprpanel)
-fi
 MISSING_PKGS=()
 for pkg in "${CRITICAL_PKGS[@]}"; do
 	rpm -q "$pkg" >/dev/null 2>&1 || MISSING_PKGS+=("$pkg")

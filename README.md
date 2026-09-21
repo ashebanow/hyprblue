@@ -39,26 +39,25 @@ Alternatively, install `polkit-gnome` and configure it to autostart.
 
 These packages will be added back when the COPR maintainer rebuilds them against Qt 6.10.
 
-### hyprpanel / aylurs-gtk-shell2 availability
+### hyprpanel has been removed
 
-`hyprpanel` and `aylurs-gtk-shell2` come from `solopasha/hyprland`, which is the
-only COPR that packages them. That project currently publishes **no
-`fedora-44` chroot** — only `fedora-rawhide`, whose rpms are `fc43` builds — so
-`dnf5 copr enable solopasha/hyprland` fails on Fedora 44 with:
+`hyprpanel` (and its `aylurs-gtk-shell2` / `astal` stack) is **no longer part of
+this image**. It came from `solopasha/hyprland`, the only COPR that packages it,
+and that project publishes no `fedora-44` chroot — only `fedora-rawhide`, whose
+rpms are `fc43` builds. Enabling it on Fedora 44 fails with:
 
 ```
 Chroot not found in the given Copr project (fedora-44-x86_64).
 ```
 
-They are therefore **absent from all variants** on Fedora 44, including
-HyprBlue. `build.sh` logs this explicitly and exempts the two packages from its
-critical-package check instead of silently dropping them. If solopasha ever
-gains a matching chroot, the same script picks them up automatically and the
-check starts enforcing them again.
+Rather than carry a repo that cannot serve any of our variants, the dependency
+and the whole solopasha repo setup (including the `includepkgs` restriction it
+needed) were dropped. The image ships `waybar` for the bar instead.
 
-They are deliberately **not** pulled in from the rawhide chroot: those are Qt
-6.9 builds, which is the same conflict already listed above for the other
-Qt-dependent packages.
+So `solopasha/hyprland` is a *deliberately* absent repo now — do not re-add it
+without a Fedora chroot that matches the base images. Pulling the packages from
+the rawhide chroot would mean Qt 6.9 builds against Bazzite's Qt 6.10, the same
+conflict already listed above.
 
 ## Installer ISOs
 

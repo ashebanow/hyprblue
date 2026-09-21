@@ -36,7 +36,6 @@ COPR_REPOS=(
 	leloubil/wl-clip-persist # not packaged anywhere else
 	lionheartp/Hyprland      # Hyprland stack; fixes https://github.com/solopasha/hyprlandRPM/issues/49
 	scottames/ghostty        # the COPR ghostty.org recommends
-	solopasha/hyprland       # ONLY for hyprpanel/ags, see the restriction below
 )
 for repo in "${COPR_REPOS[@]}"; do
 	# Try to enable the repo, but don't fail the build if it doesn't support this Fedora version
@@ -45,28 +44,11 @@ for repo in "${COPR_REPOS[@]}"; do
 	fi
 done
 
-# hyprpanel and aylurs-gtk-shell2 exist only in solopasha/hyprland, but that
-# repo also ships a full (Fedora 44-broken) Hyprland stack that would outrank
-# lionheartp's. So allow only the hyprpanel/ags/astal packages from it.
-# appmenu-glib-translator is in the list because astal-libs needs it and it,
-# too, is solopasha-only.
-log "Restricting solopasha/hyprland to the hyprpanel/ags stack..."
-SOLOPASHA_REPO="copr:copr.fedorainfracloud.org:solopasha:hyprland"
-SOLOPASHA_PKGS="hyprpanel,aylurs-gtk-shell2,astal,astal-gjs,astal-io,astal-libs,astal-gtk4,appmenu-glib-translator"
-if dnf5 repo list --all 2>/dev/null | grep -q "^${SOLOPASHA_REPO}"; then
-	# an unrestricted solopasha would shadow lionheartp's Hyprland, so a failure
-	# here has to be fatal rather than merely noisy
-	if ! dnf5 config-manager setopt "${SOLOPASHA_REPO}.includepkgs=${SOLOPASHA_PKGS}"; then
-		log "ERROR: could not restrict ${SOLOPASHA_REPO}; refusing to build"
-		exit 1
-	fi
-else
-	log "Warning: ${SOLOPASHA_REPO} is not enabled; hyprpanel will be missing"
-fi
-
-# log "Enable terra repositories..."
-# Bazzite disabled this for some reason so lets re-enable it again
-# dnf5 config-manager setopt terra.enabled=1 terra-extras.enabled=1
+# solopasha/hyprland is deliberately absent: it was pulled in only for
+# hyprpanel/aylurs-gtk-shell2, and it publishes no fedora-44 chroot (only
+# fedora-rawhide, whose rpms are fc43 builds). hyprpanel has been dropped from
+# this image, so the repo, its includepkgs restriction and the critical-package
+# exemption that went with it are all gone.
 
 #######################################################################
 ## Install Packages
@@ -95,7 +77,6 @@ FONTS=(
 # from ml4w and other sources.
 HYPR_DEPS=(
 	aquamarine
-	aylurs-gtk-shell2
 	blueman
 	bluez
 	bluez-tools
@@ -110,7 +91,6 @@ HYPR_DEPS=(
 	grim
 	grimblast
 	gvfs
-	hyprpanel
 	inxi
 	kvantum
 	# lib32-nvidia-utils
@@ -142,7 +122,8 @@ HYPR_DEPS=(
 	wallust
 	waybar
 	wget2
-	wireplumber
+	# wireplumber is added conditionally above: requesting it unconditionally
+	# conflicts with bazzite's terra-wireplumber and aborts the transaction.
 	wl-clipboard
 	wl-clip-persist
 	wlogout
@@ -229,6 +210,23 @@ ADDITIONAL_SYSTEM_APPS=(
 
 # we do all package installs in one rpm-ostree command
 # so that we create minimal layers in the final image
+
+# Bazzite ships terra-wireplumber, which Provides pipewire-session-manager and
+# Conflicts with plain wireplumber. Requesting "wireplumber" by name therefore
+# aborts the whole dnf transaction on bazzite-based variants (bluefin already
+# has plain wireplumber installed, so it never noticed). Only request it when a
+# session manager isn't already present, and ask by capability so terra's
+# provider can satisfy the request. This has to run *after* HYPR_DEPS is
+# declared, otherwise the append lands on an unset array and is discarded.
+if rpm -q wireplumber >/dev/null 2>&1; then
+	log "wireplumber already installed; leaving it alone"
+elif rpm -q --whatprovides pipewire-session-manager >/dev/null 2>&1; then
+	log "pipewire-session-manager already provided; leaving it alone"
+else
+	log "No session manager present; requesting pipewire-session-manager"
+	HYPR_DEPS+=(pipewire-session-manager)
+fi
+
 log "Installing packages using dnf5..."
 dnf5 install --setopt=install_weak_deps=False --skip-unavailable -y \
 	"${FONTS[@]}" \
@@ -242,16 +240,13 @@ dnf5 install --setopt=install_weak_deps=False --skip-unavailable -y \
 ### Sanity check
 ###
 ### --skip-unavailable means a renamed or dropped package silently vanishes
-### instead of failing the build. That is exactly how hyprpanel and
-### aylurs-gtk-shell2 went missing from every variant for a while, so assert
-### the things this image exists for actually landed.
+### instead of failing the build. Assert the things this image exists for
+### actually landed.
 
 log "Verifying critical packages..."
 CRITICAL_PKGS=(
-	aylurs-gtk-shell2
 	ghostty
 	hyprland
-	hyprpanel
 	niri
 	waybar
 	xwayland-satellite

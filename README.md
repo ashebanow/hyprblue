@@ -39,6 +39,26 @@ Alternatively, install `polkit-gnome` and configure it to autostart.
 
 These packages will be added back when the COPR maintainer rebuilds them against Qt 6.10.
 
+### hyprpanel has been removed
+
+`hyprpanel` (and its `aylurs-gtk-shell2` / `astal` stack) is **no longer part of
+this image**. It came from `solopasha/hyprland`, the only COPR that packages it,
+and that project publishes no `fedora-44` chroot — only `fedora-rawhide`, whose
+rpms are `fc43` builds. Enabling it on Fedora 44 fails with:
+
+```
+Chroot not found in the given Copr project (fedora-44-x86_64).
+```
+
+Rather than carry a repo that cannot serve any of our variants, the dependency
+and the whole solopasha repo setup (including the `includepkgs` restriction it
+needed) were dropped. The image ships `waybar` for the bar instead.
+
+So `solopasha/hyprland` is a *deliberately* absent repo now — do not re-add it
+without a Fedora chroot that matches the base images. Pulling the packages from
+the rawhide chroot would mean Qt 6.9 builds against Bazzite's Qt 6.10, the same
+conflict already listed above.
+
 ## Installer ISOs
 
 Built on demand with the "Build disk images" workflow (pick a `variant`), or

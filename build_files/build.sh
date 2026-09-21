@@ -64,10 +64,13 @@ SOLOPASHA_UNAVAILABLE=FALSE
 SOLOPASHA_PKGS="hyprpanel,aylurs-gtk-shell2,astal,astal-gjs,astal-io,astal-libs,astal-gtk4,appmenu-glib-translator"
 # Repo ids are printed with the "copr:" prefix by `dnf5 repo list`, but the
 # spelling has varied across dnf5 versions, so match on the distinctive tail and
-# use whatever id dnf5 actually reports.
-SOLOPASHA_REPO_ID="$(dnf5 repo list --all 2>/dev/null \
-	| grep -oE '[^[:space:]]*copr[^[:space:]]*solopasha[^[:space:]]*' \
-	| sed 's/\.repo$//' | head -n1)"
+# use whatever id dnf5 actually reports. `|| true` is required: this script runs
+# under `set -o pipefail`, and a grep with no match inside a command
+# substitution would otherwise abort the build here instead of reaching the
+# "no chroot for this release" branch below.
+SOLOPASHA_REPO_ID="$( { dnf5 repo list --all 2>/dev/null || true; } \
+	| { grep -oE '[^[:space:]]*copr[^[:space:]]*solopasha[^[:space:]]*' || true; } \
+	| { sed 's/\.repo$//' | head -n1; } )"
 if [[ -n "$SOLOPASHA_REPO_ID" ]]; then
 	log "Found solopasha repo id: ${SOLOPASHA_REPO_ID}"
 	# an unrestricted solopasha would shadow lionheartp's Hyprland, so a failure

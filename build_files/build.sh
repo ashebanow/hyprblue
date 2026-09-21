@@ -53,20 +53,27 @@ done
 log "Restricting solopasha/hyprland to the hyprpanel/ags stack..."
 SOLOPASHA_REPO="copr:copr.fedorainfracloud.org:solopasha:hyprland"
 SOLOPASHA_PKGS="hyprpanel,aylurs-gtk-shell2,astal,astal-gjs,astal-io,astal-libs,astal-gtk4,appmenu-glib-translator"
-if dnf5 repo list --all 2>/dev/null | grep -q "^${SOLOPASHA_REPO}"; then
+# `dnf5 copr enable` writes the repo id without a "copr:" prefix in some dnf5
+# versions, so match on the bare id and use whatever spelling dnf5 reports.
+# Matching the literal prefixed string silently took the else branch on CI,
+# leaving solopasha unrestricted... except it never got enabled at all, which
+# is why hyprpanel/aylurs-gtk-shell2 vanished. Resolve the real id instead.
+SOLOPASHA_REPO_ID="$(dnf5 repo list --all 2>/dev/null \
+	| grep -oE '[^[:space:]]*copr[^[:space:]]*solopasha[^[:space:]]*' \
+	| sed 's/\.repo$//' | head -n1)"
+if [[ -n "$SOLOPASHA_REPO_ID" ]]; then
+	log "Found solopasha repo id: ${SOLOPASHA_REPO_ID}"
 	# an unrestricted solopasha would shadow lionheartp's Hyprland, so a failure
 	# here has to be fatal rather than merely noisy
-	if ! dnf5 config-manager setopt "${SOLOPASHA_REPO}.includepkgs=${SOLOPASHA_PKGS}"; then
-		log "ERROR: could not restrict ${SOLOPASHA_REPO}; refusing to build"
+	if ! dnf5 config-manager setopt "${SOLOPASHA_REPO_ID}.includepkgs=${SOLOPASHA_PKGS}"; then
+		log "ERROR: could not restrict ${SOLOPASHA_REPO_ID}; refusing to build"
 		exit 1
 	fi
 else
-	log "Warning: ${SOLOPASHA_REPO} is not enabled; hyprpanel will be missing"
+	log "ERROR: ${SOLOPASHA_REPO} is not enabled; hyprpanel/aylurs-gtk-shell2 would be missing"
+	log "ERROR: refusing to build an image without its desktop shell"
+	exit 1
 fi
-
-# log "Enable terra repositories..."
-# Bazzite disabled this for some reason so lets re-enable it again
-# dnf5 config-manager setopt terra.enabled=1 terra-extras.enabled=1
 
 #######################################################################
 ## Install Packages
@@ -142,7 +149,8 @@ HYPR_DEPS=(
 	wallust
 	waybar
 	wget2
-	wireplumber
+	# wireplumber is added conditionally above: requesting it unconditionally
+	# conflicts with bazzite's terra-wireplumber and aborts the transaction.
 	wl-clipboard
 	wl-clip-persist
 	wlogout
@@ -229,6 +237,23 @@ ADDITIONAL_SYSTEM_APPS=(
 
 # we do all package installs in one rpm-ostree command
 # so that we create minimal layers in the final image
+
+# Bazzite ships terra-wireplumber, which Provides pipewire-session-manager and
+# Conflicts with plain wireplumber. Requesting "wireplumber" by name therefore
+# aborts the whole dnf transaction on bazzite-based variants (bluefin already
+# has plain wireplumber installed, so it never noticed). Only request it when a
+# session manager isn't already present, and ask by capability so terra's
+# provider can satisfy the request. This has to run *after* HYPR_DEPS is
+# declared, otherwise the append lands on an unset array and is discarded.
+if rpm -q wireplumber >/dev/null 2>&1; then
+	log "wireplumber already installed; leaving it alone"
+elif rpm -q --whatprovides pipewire-session-manager >/dev/null 2>&1; then
+	log "pipewire-session-manager already provided; leaving it alone"
+else
+	log "No session manager present; requesting pipewire-session-manager"
+	HYPR_DEPS+=(pipewire-session-manager)
+fi
+
 log "Installing packages using dnf5..."
 dnf5 install --setopt=install_weak_deps=False --skip-unavailable -y \
 	"${FONTS[@]}" \

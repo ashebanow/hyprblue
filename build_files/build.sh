@@ -227,6 +227,67 @@ else
 	HYPR_DEPS+=(pipewire-session-manager)
 fi
 
+# Bazzite ships terra-xorg-x11-server-Xwayland instead of Fedora's
+# xorg-x11-server-Xwayland, and terra's 26.0.99.903 build declares only the
+# unqualified name:
+#
+#   Provides:  xorg-x11-server-Xwayland = 26.0.99.903
+#   Conflicts: xorg-x11-server-Xwayland
+#
+# hyprland asks for the *arch-qualified* capability (xorg-x11-server-Xwayland
+# (x86-64)), which terra's earlier 24.1.x build still provided -- that is why
+# this only broke once the base image moved to 26.0.99.903. Bazzite's own kwin
+# asks for the unqualified name, so Plasma is unaffected, but on bazzite the
+# only remaining provider of the arch-qualified name is Fedora's package, which
+# terra's Conflicts rules out. dnf then aborts the entire transaction:
+#
+#   ... requires xorg-x11-server-Xwayland(x86-64), but none of the providers
+#   can be installed
+#
+# The Xwayland hyprland wants is installed either way (hyprland only needs it
+# for X11 clients, and we ship xwayland-satellite as well), so declare the
+# missing alias with a throwaway provide-only package instead of tearing
+# bazzite's Xwayland out. No-op wherever the capability already exists: on
+# bluefin, or on bazzite once terra restores the %{?_isa} Provide.
+if rpm -q terra-xorg-x11-server-Xwayland >/dev/null 2>&1 &&
+	! rpm -q --whatprovides 'xorg-x11-server-Xwayland(x86-64)' >/dev/null 2>&1; then
+	log "Backfilling the xorg-x11-server-Xwayland(x86-64) capability"
+
+	# rpm-build exists only to produce the shim below and is removed again, so
+	# none of it lands in the image. Restrict to Fedora's repos so terra's
+	# higher repo priority can't swap in its rebuilds of the build deps.
+	dnf5 install --setopt=install_weak_deps=False -y \
+		--disablerepo='*' --enablerepo='fedora*' --enablerepo='updates*' rpm-build
+
+	shimdir="$(mktemp -d)"
+	mkdir -p "$shimdir"/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+	cat >"$shimdir/SPECS/xwayland-isa-compat.spec" <<'EOF'
+Name:      xorg-x11-server-Xwayland-isa-compat
+Version:   1
+Release:   1
+Summary:   Arch-qualified alias for the Xwayland bazzite installs
+License:   Apache-2.0
+BuildArch: noarch
+# hyprland asks for the arch-qualified capability and bazzite's terra Xwayland
+# only declares the bare name, so alias it here rather than replace the
+# Xwayland the base image ships. See build_files/build.sh for the full story.
+Provides: xorg-x11-server-Xwayland(x86-64)
+
+%description
+Declares the xorg-x11-server-Xwayland(x86-64) capability that hyprland requires
+on bazzite-based images, where the installed Xwayland comes from terra-extras
+and provides only the unqualified name. Contains no files.
+
+%files
+EOF
+	rpmbuild -bb --define "_topdir $shimdir" \
+		"$shimdir/SPECS/xwayland-isa-compat.spec"
+	# --nogpgcheck: the shim is built here, so it carries no signature.
+	dnf5 install --nogpgcheck -y "$shimdir"/RPMS/noarch/*.rpm
+	dnf5 remove -y rpm-build
+	rm -rf "$shimdir"
+fi
+
 log "Installing packages using dnf5..."
 dnf5 install --setopt=install_weak_deps=False --skip-unavailable -y \
 	"${FONTS[@]}" \

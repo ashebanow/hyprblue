@@ -67,8 +67,17 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5
 
       # This is optional, but if you see that your builds are way too big for the runners, you can enable this by uncommenting the following lines:
+      #
+      # continue-on-error: this step only reclaims disk, so a failure here costs
+      # space, not correctness. It currently fails on the hosted runners because
+      # the action shells out to `apt-get remove -y google-cloud-cli`, a package
+      # GitHub no longer ships, and apt exits 100 ("Unable to locate package").
+      # container-storage-action hardcodes the same removal for its own
+      # fallback path (remove-unwanted-software@v10), so when the btrfs mount
+      # drops to that fallback the build dies before it starts.
       - name: Maximize build space
         uses: ublue-os/remove-unwanted-software@cc0becac701cf642c8f0a6613bbdaf5dc36b259e # v9
+        continue-on-error: true
         with:
           remove-codeql: true
 

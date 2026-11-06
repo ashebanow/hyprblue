@@ -78,7 +78,7 @@ FONTS=(
 HYPR_DEPS=(
 	aquamarine
 	blueman
-	bluez
+	# bluez is handled conditionally below; see the terra-bluez note.
 	bluez-tools
 	brightnessctl
 	btop
@@ -225,6 +225,27 @@ elif rpm -q --whatprovides pipewire-session-manager >/dev/null 2>&1; then
 else
 	log "No session manager present; requesting pipewire-session-manager"
 	HYPR_DEPS+=(pipewire-session-manager)
+fi
+
+# Same story for BlueZ, which bit us when the bazzite base image moved from
+# fc44 to fc45. Bazzite used to ship its own bluez build
+# (bluez-5.87-2.fc44.bazzite...) which satisfied a request by name. As of fc45
+# it ships terra's rebuild instead:
+#
+#   installed package terra-bluez-5.87+1.git8750129efca8-2.fc45.x86_64
+#     conflicts with bluez provided by bluez-5.87+1.git8750129efca8-1.fc45
+#
+# which both Provides and Conflicts: bluez, so requesting "bluez" by name
+# aborts the entire dnf transaction on bazzite-based variants even though a
+# BlueZ stack is already installed. bluefin ships plain bluez and never
+# noticed. Both base images always have some BlueZ provider, so only ask for
+# one when the capability is genuinely absent -- and ask by the capability
+# bluez-tools/blueman actually need, so terra's provider can satisfy it.
+if rpm -q --whatprovides bluez >/dev/null 2>&1; then
+	log "bluez already provided; leaving it alone"
+else
+	log "No BlueZ provider present; requesting bluez"
+	HYPR_DEPS+=(bluez)
 fi
 
 # Bazzite ships terra-xorg-x11-server-Xwayland instead of Fedora's
